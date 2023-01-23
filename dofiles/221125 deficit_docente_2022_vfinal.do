@@ -196,15 +196,15 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	*solo 1
 	gen def_total1=ofta_hrs1-dda_hrs_basica
-	replace def_total1=def_total1/44
+	replace def_total1=def_total1/(44*0.65)
 	gen def_ido1=ofta_hrs_ido1-dda_hrs_basica
-		replace def_ido1=def_ido1/44
+		replace def_ido1=def_ido1/(44*0.65)
 		
 	*1 + 2
 	gen def_total2=ofta_hrs2-dda_hrs_basica
-	replace def_total2=def_total2/44
+	replace def_total2=def_total2/(44*0.65)
 	gen def_ido2=ofta_hrs_ido2-dda_hrs_basica
-		replace def_ido2=def_ido2/44
+		replace def_ido2=def_ido2/(44*0.65)
 
 	save "ofta_dda_basica_2022",replace	
 **# Base Final
