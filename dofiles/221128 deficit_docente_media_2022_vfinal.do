@@ -328,16 +328,18 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	use "ofta_dda_media_2022",clear
 	
 *% de establecimientos con déficit por región y asignatura	
+* leng mat cs hist
+* cada variable debe imputarse manualmente para las celdas b2 g2 l2 q2
 	foreach var in hist {
 		preserve
 	collapse (mean) d_def_`var'2 d_def_ido_`var'2 , by(cod_reg_rbd)
-	export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(media_ee,modify) firstrow(var) cell(Q2)
+	export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(media_ee,modify) firstrow(var) cell(q2)
 	restore
 	}
 	
 ******Total de docentes que faltan por región y asignatura
 	*1-NO NETEO! Regional
-	foreach var in hist {
+	foreach var in leng mat cs hist {
 	preserve	
 	
 	collapse (sum) def_`var'2  if d_def_`var'2==1 , by(cod_reg_rbd)
