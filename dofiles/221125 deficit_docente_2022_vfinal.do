@@ -280,9 +280,9 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 ******Total de docentes que faltan por comuna
 /* DESCRIPCION TABLAS
 
-Basica: Se debe obtener el total de cada fila, estos valores corresponden al supuesto de no considerar reasignacion dentro de la comuna
+Basica_neto: Se debe obtener el total de cada fila, estos valores corresponden al supuesto de no considerar reasignacion dentro de la comuna
 
-Basica_com: Se debe considerar la suma de todos los valores dentro de la región, dado que existe reasignacion dentro de una misma región.
+Basica_como basica: Se debe considerar la suma de todos los valores dentro de la región, dado que existe reasignacion dentro de una misma región.
 
 Basica_neto_com: Se debe generar una dummy si el valor es negativo o no, asi luego se sumaran todos los valores negativos para cada región, Considerando reasignación docente dentro de la comuna de la región	
 
