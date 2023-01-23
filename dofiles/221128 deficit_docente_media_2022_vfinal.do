@@ -229,9 +229,9 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	local i=1
 	foreach var in leng mat cs hist{
 		gen def_`var'1=ofta_hrs1 - dda_hrs_`var' if asignatura==`i'
-			replace def_`var'1=def_`var'1/44
+			replace def_`var'1=def_`var'1/(44*0.65)
 		gen def_ido_`var'1=ofta_hrs_ido1 - dda_hrs_`var' if asignatura==`i'
-			replace def_ido_`var'1=def_ido_`var'1/44
+			replace def_ido_`var'1=def_ido_`var'1/(44*0.65)
 	local i=`i'+1
 	}
 
@@ -240,9 +240,9 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	local i=1
 	foreach var in leng mat cs hist{
 		gen def_`var'2=ofta_hrs2 - dda_hrs_`var' if asignatura==`i'
-					replace def_`var'2=(def_`var'2)/44
+					replace def_`var'2=(def_`var'2)/(44*0.65)
 		gen def_ido_`var'2=ofta_hrs_ido2- dda_hrs_`var' if asignatura==`i'
-					replace def_ido_`var'2=(def_ido_`var'2)/44
+					replace def_ido_`var'2=(def_ido_`var'2)/(44*0.65)
 	local i=`i'+1
 	}
 
@@ -266,12 +266,12 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 * Graficos Minuta
 	foreach var in leng {
 	twoway kdensity def_`var'2 || kdensity def_ido_`var'2, title("Densidad del superávit/déficit docente en Lenguaje") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
-	graph export "$output\221130_def_doc_`var'_2022_distr.png", replace
+	graph export "$output\230123_def_doc_`var'_2022_distr.png", replace
 	}
 	
 	foreach var in leng {
 	graph box def_`var'2  def_ido_`var'2, title("Densidad del superávit/déficit docente en Lenguaje") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) graphregion(c(white)) nooutsides
-	graph export "$output\221130_def_doc_`var'_2022__boxplot.png",replace
+	graph export "$output\230123_def_doc_`var'_2022__boxplot.png",replace
 	}
 
 
@@ -300,6 +300,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 
 	use "ofta_dda_media_2022",clear
 	
+/* REVISAR ESTA SECCION DEL CODIGO
 *suma de docentes faltantes
 	forv i=1(1)4{
 		preserve
@@ -308,6 +309,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	}
 	
 	collapse (mean) d_def*, by(cod_reg_rbd)
+
 	
 *suma de docentes idoneos faltantes
 	use "ofta_dda_media_2022",clear
@@ -317,10 +319,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 			preserve
 				keep if asignatura==`i'
 				collapse (sum) def_*, by(cod_reg_rbd)
-				export excel using "$output\221129_n_def_doc_media_reg_2022", sheet(`i',modify) firstrow(var)
+				export excel using "$output\230123_n_def_doc_media_reg_2022", sheet(`i',modify) firstrow(var)
 			restore
 		}
-			
+	*/		
 		
 *Promedio de deficit por región
 	use "ofta_dda_media_2022",clear
@@ -329,7 +331,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	foreach var in hist {
 		preserve
 	collapse (mean) d_def_`var'2 d_def_ido_`var'2 , by(cod_reg_rbd)
-	export excel using "$output\221129_n_def_doc_reg_2022_v2", sheet(media_ee,modify) firstrow(var) cell(Q2)
+	export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(media_ee,modify) firstrow(var) cell(Q2)
 	restore
 	}
 	
@@ -339,13 +341,13 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	preserve	
 	
 	collapse (sum) def_`var'2  if d_def_`var'2==1 , by(cod_reg_rbd)
-	export excel using "$output\221201_n_doc_media_reg_22_`var'", sheet(media,modify) firstrow(var) cell(A2)
+	export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media,modify) firstrow(var) cell(A2)
 	restore 
 
 	preserve	
 	
 	collapse (sum) def_ido_`var'2 if d_def_ido_`var'2==1 , by(cod_reg_rbd)
-	export excel using "$output\221201_n_doc_media_reg_22_`var'", sheet(media,modify) firstrow(var) cell(E2)
+	export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media,modify) firstrow(var) cell(E2)
 				
 	restore 
 	
@@ -353,13 +355,13 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	preserve
 	
 	collapse (sum) def_`var'2  , by(cod_reg_rbd)
-	export excel using "$output\221201_n_doc_media_reg_22_`var'", sheet(media_neto,modify) firstrow(var) cell(A2)
+	export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_neto,modify) firstrow(var) cell(A2)
 				
 	restore 
 
 	preserve	
 	collapse (sum) def_ido_`var'2  , by(cod_reg_rbd)
-				export excel using "$output\221201_n_doc_media_reg_22_`var'", sheet(media_neto,modify) firstrow(var) cell(E2)
+				export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_neto,modify) firstrow(var) cell(E2)
 	restore 
 	
 
@@ -368,23 +370,23 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*1-NO NETEO! Comunal
 	preserve	
 	collapse (sum) def_`var'2 (first) cod_reg_rbd if d_def_`var'2==1 , by(cod_com_rbd)
-				export excel using "$output\221201_n_doc_media_reg_22_`var'", sheet(media_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd if d_def_ido_`var'2==1 , by(cod_com_rbd)
-				export excel using "$output\221201_n_doc_media_reg_22_`var'", sheet(media_com,modify) firstrow(var) cell(E2)
+				export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_com,modify) firstrow(var) cell(E2)
 	restore 
 	
 	*2 - Neteo Comunal
 		preserve	
 	collapse (sum) def_`var'2 (first) cod_reg_rbd , by(cod_com_rbd)
-				export excel using "$output\221201_n_doc_media_reg_22_`var'", sheet(media_neto_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_neto_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd  , by(cod_com_rbd)
-				export excel using "$output\221201_n_doc_media_reg_22_`var'", sheet(media_neto_com,modify) firstrow(var) cell(E2)
+				export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_neto_com,modify) firstrow(var) cell(E2)
 	restore 
 	}	
 	
