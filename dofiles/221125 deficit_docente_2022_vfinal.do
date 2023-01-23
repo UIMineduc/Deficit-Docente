@@ -220,10 +220,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*/
 	
 	twoway kdensity def_total2 || kdensity def_ido2, title("Densidad del superávit/déficit docente - Educación Básica") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit Idoneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
-	graph export "$output\221130_def_basica_2022.png",replace
+	graph export "$output\230123_def_basica_2022.png",replace
 	
 	graph box def_total2 def_ido2,title("Distribución del superávit/déficit docente - Educación Básica") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit Idoneo")) graphregion(c(white)) nooutsides
-	graph export "$output\221130_boxplot_def_basica_2022.png",replace
+	graph export "$output\230123_boxplot_def_basica_2022.png",replace
 	
 	
 	
@@ -257,23 +257,23 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*1-NO NETEO! Regional
 	preserve	
 	collapse (sum) def_total2 if d_def_tot2==1 , by(cod_reg_rbd)
-				export excel using "$output\221129_n_def_doc_reg_2022_v2", sheet(basica,modify) firstrow(var) cell(B2)
+				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 if d_def_ido2==1 , by(cod_reg_rbd)
-				export excel using "$output\221129_n_def_doc_reg_2022_v2", sheet(basica,modify) firstrow(var) cell(E2)
+				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica,modify) firstrow(var) cell(E2)
 	restore 
 	
 	*2 - Neteo Regional
 		preserve	
 	collapse (sum) def_total2  , by(cod_reg_rbd)
-				export excel using "$output\221129_n_def_doc_reg_2022_v2", sheet(basica_neto,modify) firstrow(var) cell(B2)
+				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_neto,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2  , by(cod_reg_rbd)
-				export excel using "$output\221129_n_def_doc_reg_2022_v2", sheet(basica_neto,modify) firstrow(var) cell(E2)
+				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_neto,modify) firstrow(var) cell(E2)
 	restore 
 	
 
@@ -282,22 +282,22 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*1-NO NETEO! Comunal
 	preserve	
 	collapse (sum) def_total2 (first) cod_reg_rbd if d_def_tot2==1 , by(cod_com_rbd)
-				export excel using "$output\221129_n_def_doc_reg_2022_v2", sheet(basica_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 (first) cod_reg_rbd if d_def_ido2==1 , by(cod_com_rbd)
-				export excel using "$output\221129_n_def_doc_reg_2022_v2", sheet(basica_com,modify) firstrow(var) cell(E2)
+				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_com,modify) firstrow(var) cell(E2)
 	restore 
 	
 	*2 - Neteo Comunal
 		preserve	
 	collapse (sum) def_total2 (first) cod_reg_rbd , by(cod_com_rbd)
-				export excel using "$output\221129_n_def_doc_reg_2022_v2", sheet(basica_neto_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_neto_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 (first) cod_reg_rbd  , by(cod_com_rbd)
-				export excel using "$output\221129_n_def_doc_reg_2022_v2", sheet(basica_neto_com,modify) firstrow(var) cell(E2)
+				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_neto_com,modify) firstrow(var) cell(E2)
 	restore 
 
