@@ -264,13 +264,14 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 
 
 * Graficos Minuta
-	foreach var in leng {
-	twoway kdensity def_`var'2 || kdensity def_ido_`var'2, title("Densidad del superávit/déficit docente en Lenguaje") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
+	*Cambiar titulo del gráfico de forma manual
+	foreach var in hist    {
+	twoway kdensity def_`var'2 || kdensity def_ido_`var'2, title("Densidad del superávit/déficit docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
 	graph export "$output\230123_def_doc_`var'_2022_distr.png", replace
 	}
 	
-	foreach var in leng {
-	graph box def_`var'2  def_ido_`var'2, title("Densidad del superávit/déficit docente en Lenguaje") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) graphregion(c(white)) nooutsides
+	foreach var in hist    {
+	graph box def_`var'2  def_ido_`var'2, title("Densidad del superávit/déficit docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) graphregion(c(white)) nooutsides
 	graph export "$output\230123_def_doc_`var'_2022__boxplot.png",replace
 	}
 
