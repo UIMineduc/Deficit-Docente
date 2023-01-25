@@ -251,7 +251,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*% de EE con déficit por región
 	
 	*tabstat d_def_tot1 d_def_ido1 d_def_tot2 d_def_ido2, by(cod_reg_rbd)
-	tabstat d_def_tot2 d_def_ido2, by(cod_reg_rbd)
+	tabstat d_def_tot2 d_def_ido2, by(cod_reg_rbd) s(mean)
 
 ******Total de docentes que faltan por región
 	*1-NO NETEO! Regional

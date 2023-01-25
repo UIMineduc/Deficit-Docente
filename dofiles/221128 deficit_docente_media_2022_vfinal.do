@@ -274,6 +274,12 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	graph box def_`var'2  def_ido_`var'2, title("Densidad del superávit/déficit docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) graphregion(c(white)) nooutsides
 	graph export "$output\230123_def_doc_`var'_2022__boxplot.png",replace
 	}
+	
+
+	graph box def_*2, title("Densidad del superávit/déficit docente en Historia")  graphregion(c(white)) nooutsides
+
+	twoway kdensity def_*2 || kdensity def_ido_*2, title("Densidad del superávit/déficit docente en Historia")  xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
+
 
 
 	local i=1
@@ -327,6 +333,11 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		
 *Promedio de deficit por región
 	use "ofta_dda_media_2022",clear
+	
+		*Podemos generar la tabla acá
+	foreach var in leng mat cs hist {
+		tabstat d_def_`var'2 d_def_ido_`var'2, by(cod_reg_rbd) s(mean)
+	}
 	
 *% de establecimientos con déficit por región y asignatura	
 * leng mat cs hist
