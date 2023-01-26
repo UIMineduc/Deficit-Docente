@@ -276,7 +276,18 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	}
 	
 
-	graph box def_*2, title("Densidad del superávit/déficit docente en Historia")  graphregion(c(white)) nooutsides
+	graph box def_*2, title("Distribución del superávit/déficit docente en Ens. Media") ///
+	legend(label(1 "Dif. Lenguaje Total") ///
+	label(2 "Dif. Lenguaje Idoneo") ///
+	label(3 "Dif. Matemáticas Total") ///
+	label(4 "Dif. Matemáticas Idoneo") ///
+	label(5 "Dif. Ciencias Total") ///
+	label(6 "Dif. Ciencias Idoneo") ///
+	label(7 "Dif. Historia Total") ///
+	label(8 "Dif. Historia Idoneo")) ///
+	graphregion(c(white)) nooutsides ///
+	ytitle("Diferencia")
+	graph export "$output\230123_def_doc_media_2022__boxplot.png",replace
 
 	twoway kdensity def_*2 || kdensity def_ido_*2, title("Densidad del superávit/déficit docente en Historia")  xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
 
