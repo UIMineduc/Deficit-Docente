@@ -218,18 +218,19 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	graph box def_total1  def_total2   def_ido1   def_ido2,title("Distribución del déficit docente") legend(label(1 "Deficit Total 1") label(2 "Deficit Total 1+2") label(3 "Deficit Idoneo 1") label(4 "Deficit Idoneo 1 +2"))
 	graph export "$output\221129_boxplot_def_basica_2022.png",replace
 	*/
-	
+	**# Graficos
 	twoway kdensity def_total2 || kdensity def_ido2, title("Densidad del superávit/déficit docente - Educación Básica") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit Idoneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
 	graph export "$output\230123_def_basica_2022.png",replace
 	
-	graph box def_total2 def_ido2,title("Distribución del superávit/déficit docente - Educación Básica") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit Idoneo")) graphregion(c(white)) nooutsides
+	graph box def_total2 def_ido2,title("Distribución del superávit/déficit docente - Educación Básica") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit Idoneo")) graphregion(c(white)) nooutsides ytitle("Diferencia")
 	graph export "$output\230123_boxplot_def_basica_2022.png",replace
 	
 	
 	
 	*agregamos data administrativa
 	merge 1:1 rbd using "$directorio\directorio_2022", nogen keep(3) keepusing(cod_reg_rbd cod_com_rbd cod_depe2)
-	
+
+	**# Tablas finales
 	*Indicador por region y comuna
 	bys cod_com_rbd: gen id_com=_n==1
 	bys cod_reg_rbd: gen id_reg=_n==1
