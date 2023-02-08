@@ -26,7 +26,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*keep if persona==1
 		
 	drop estado_estab persona
-	keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd  esp_id_1
+	keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd  esp_id_1 id_itc
 	
 	
 **# Análisis
@@ -34,7 +34,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		keep if rural_rbd==0
 		
 		* Destring de variables 
-		destring, dpcomma replace
+		quietly destring, dpcomma replace
 
 	*Mantenemos a quienes ejercen como docente de aula, de forma primaria y a los que hacen clases en basica/media
 	*Este se considera el universo de docentes
@@ -55,7 +55,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	gen ido_bas=0 if inlist(2,nivel1,nivel2) & inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001)
 	 replace ido_bas=1 if tip_tit_id_1==13 & inlist(2,nivel1,nivel2) & inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001)
 
-	 tab ido_bas // proporción de idoneos es el 53%
+	 tab ido_bas // proporción de idoneos es el 64%
 
 	********************************************************************************
 	* Horas totales del establecimiento*
@@ -251,6 +251,9 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		
 	*% de EE con déficit por región
 	
+	save "ofta_dda_basica_2022.dta",replace
+	
+	
 	*tabstat d_def_tot1 d_def_ido1 d_def_tot2 d_def_ido2, by(cod_reg_rbd)
 	tabstat d_def_tot2 d_def_ido2, by(cod_reg_rbd) s(mean)
 
@@ -314,4 +317,73 @@ Basica_neto_com: Se debe generar una dummy si el valor es negativo o no, asi lue
 	collapse (sum) def_ido2 (first) cod_reg_rbd  , by(cod_com_rbd)
 				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_neto_com,modify) firstrow(var) cell(E2)
 	restore 
+
+**# Analisis por Dependencia
+	
+	use ofta_dda_basica_2022.dta,clear
+	*Definición de Dependencia
+	*generamos la dependencia para el CEM entre público y part.sub
+	gen depe=.
+		replace depe=1 if inlist(cod_depe2,1,5)
+		replace depe=2 if inlist(cod_depe2,2,4)
+		replace depe=3 if cod_depe2==3
+		
+	label define depe 1 "Público" 2 "Subvencionado" 3 "Particular"
+	label  values depe depe
+	
+	
+	**# Tablas
+		*1-NO NETEO! Regional
+	
+	preserve	
+	collapse (sum) def_total2 if d_def_tot2==1 , by(cod_reg_rbd depe) 
+	sort depe cod_reg
+				export excel using "$output\230208_dependencia_basica", sheet(basica,modify) firstrow(var) cell(B2)
+	restore 
+
+	preserve	
+	collapse (sum) def_ido2 if d_def_ido2==1 , by(cod_reg_rbd depe)
+	sort depe cod_reg
+				export excel using "$output\230208_dependencia_basica", sheet(basica,modify) firstrow(var) cell(F2)
+	restore 
+	
+	*2 - Neteo Regional
+		preserve	
+	collapse (sum) def_total2  , by(cod_reg_rbd depe)
+	sort depe cod_reg
+				export excel using "$output\230208_dependencia_basica", sheet(basica_neto,modify) firstrow(var) cell(B2)
+	restore 
+
+	preserve	
+	collapse (sum) def_ido2  , by(cod_reg_rbd depe)
+		sort depe cod_reg
+				export excel using "$output\230208_dependencia_basica", sheet(basica_neto,modify) firstrow(var) cell(F2)
+	restore
+	
+	*3-NO NETEO! Comunal
+	preserve	
+	collapse (sum) def_total2 (first) cod_reg_rbd if d_def_tot2==1 , by(cod_com_rbd depe)
+	sort depe cod_com_rbd
+	export excel using "$output\230208_dependencia_basica", sheet(basica_com,modify) firstrow(var) cell(B2)
+	restore 
+
+	preserve	
+	collapse (sum) def_ido2 (first) cod_reg_rbd if d_def_ido2==1 , by(cod_com_rbd depe)
+	sort depe cod_com_rbd
+				export excel using "$output\230208_dependencia_basica", sheet(basica_com,modify) firstrow(var) cell(F2)
+	restore 
+	
+	*4 - Neteo Comunal
+		preserve	
+	collapse (sum) def_total2 (first) cod_reg_rbd , by(cod_com_rbd depe)
+		sort depe cod_com_rbd
+				export excel using "$output\230208_dependencia_basica", sheet(basica_neto_com,modify) firstrow(var) cell(B2)
+	restore 
+
+	preserve	
+	collapse (sum) def_ido2 (first) cod_reg_rbd  , by(cod_com_rbd depe)
+		sort depe cod_com_rbd
+				export excel using "$output\230208_dependencia_basica", sheet(basica_neto_com,modify) firstrow(var) cell(F2)
+	restore 
+
 

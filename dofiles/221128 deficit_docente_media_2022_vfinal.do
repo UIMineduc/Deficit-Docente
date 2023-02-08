@@ -25,7 +25,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*keep if persona==1
 		
 	drop estado_estab persona
-	keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1
+	keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1 id_itc
 	
 	
 **# Análisis
@@ -33,7 +33,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		keep if rural_rbd==0
 		
 		* Destring de variables 
-		destring, dpcomma replace
+		quietly destring, dpcomma replace
 
 	*Mantenemos a quienes ejercen como docente de aula, de forma primaria y a los que hacen clases en basica/media
 	*Este se considera el universo de docentes
@@ -314,7 +314,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	save "ofta_dda_media_2022.dta",replace
 	
 	
-**# Exportar a excel
+**# Exportar a excel - resultados
 
 	use "ofta_dda_media_2022",clear
 	
@@ -415,7 +415,98 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	restore 
 	}	
 	
-////////////////////////////////////////////////////////////////////////////////
-//////////// seccion de comentarios
+**# Analisis - Dependencia
+
+	use "ofta_dda_media_2022",clear
+	
+	
+	*generamos la dependencia para el CEM entre público y part.sub
+	gen depe=.
+		replace depe=1 if inlist(cod_depe2,1,5)
+		replace depe=2 if inlist(cod_depe2,2,4)
+		replace depe=3 if cod_depe2==3
+		
+	label define depe 1 "Público" 2 "Subvencionado" 3 "Particular"
+	label  values depe depe
+		
+
+	foreach var in leng mat cs hist {
+	 tabstat def_ido_`var'2 if d_def_ido_`var'2 , by(depe) s(mean sd n)
+	}
+	
+	**# Dependencia - Lenguaje
+
+	frame create lenguaje
+	frame change lenguaje
+
+	use "ofta_dda_media_2022",clear
+	
+	foreach var in leng mat cs hist {
+	 tabstat def_ido_`var'2 if d_def_ido_`var'2 , by(depe) s(mean sd n)
+	}
+	
+	*****Total de docentes que faltan por región y asignatura
+	*1-NO NETEO! Regional
+	
+	local j=2
+	foreach var in leng mat cs hist {
+	
+	preserve	
+	
+	collapse (sum) def_`var'2  if d_def_`var'2==1 , by(depe)
+	export excel using "$output\230208_dependencia2", sheet(media,modify) firstrow(var) cell(A`j')
+	restore 
+
+	
+	preserve	
+	
+	collapse (sum) def_ido_`var'2 if d_def_ido_`var'2==1  , by(depe)
+	export excel using "$output\230208_dependencia2", sheet(media,modify) firstrow(var) cell(C`j')
+				
+	restore 
+	
+	*2 - Neteo Regional
+	preserve
+	
+	collapse (sum) def_`var'2 , by(depe)
+	export excel using "$output\230208_dependencia2", sheet(media_neto,modify) firstrow(var) cell(F`j')
+				
+	restore 
+	
+
+	preserve	
+	collapse (sum) def_ido_`var'2  , by(depe)
+				export excel using "$output\230208_dependencia2", sheet(media_neto,modify) firstrow(var) cell(H`j')
+	restore 
+		
+
+******Total de docentes que faltan por comuna,región y asignatura
+
+	*1-NO NETEO! Comunal
+	preserve	
+	collapse (sum) def_`var'2 (first) cod_reg_rbd if d_def_`var'2==1  , by(depe)
+				export excel using "$output\230208_dependencia2", sheet(media_com,modify) firstrow(var) cell(L`j')
+	restore 
+
+	preserve	
+	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd if d_def_ido_`var'2==1, by(depe)
+				export excel using "$output\230208_dependencia2", sheet(media_com,modify) firstrow(var) cell(O`j')
+	restore 
+
+	*2 - Neteo Comunal
+		preserve	
+	collapse (sum) def_`var'2 (first) cod_reg_rbd  , by(depe)
+				export excel using "$output\230208_dependencia2", sheet(media_neto_com,modify) firstrow(var) cell(R`j')
+	restore 
+	
+	preserve	
+	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd  , by(depe)
+				export excel using "$output\230208_dependencia2", sheet(media_neto_com,modify) firstrow(var) cell(U`j')
+	restore 
+		local j=`j'+5
+	}	
+	
+	
+	
 
 	
