@@ -196,20 +196,25 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	*solo 1
 	gen def_total1=ofta_hrs1-dda_hrs_basica
-	replace def_total1=def_total1/(44*0.65)
+	replace def_total1=def_total1/(30*0.65)
 	gen def_ido1=ofta_hrs_ido1-dda_hrs_basica
-		replace def_ido1=def_ido1/(44*0.65)
+		replace def_ido1=def_ido1/(30*0.65)
 		
 	*1 + 2
 	gen def_total2=ofta_hrs2-dda_hrs_basica
-	replace def_total2=def_total2/(44*0.65)
+	replace def_total2=def_total2/(30*0.65)
 	gen def_ido2=ofta_hrs_ido2-dda_hrs_basica
-		replace def_ido2=def_ido2/(44*0.65)
+		replace def_ido2=def_ido2/(30*0.65)
 
-	save "ofta_dda_basica_2022",replace	
+	*save "ofta_dda_basica_2022",replace
+	tempfile simulacion
+	save `simulacion'
+	
+	
 **# Base Final
 
-	use "ofta_dda_basica_2022",clear		
+	*use "ofta_dda_basica_2022",clear
+	use `simulacion',clear
 	
 	/* Gráficos considerando horas1 y horas 1+2
 	twoway kdensity def_total1 || kdensity def_total2 || kdensity def_ido1 || kdensity def_ido2, title("Densidad del déficit docente") legend(label(1 "Deficit Total 1") label(2 "Deficit Total 1+2") label(3 "Deficit Idoneo 1") label(4 "Deficit Idoneo 1 +2"))
@@ -220,10 +225,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*/
 	**# Graficos
 	twoway kdensity def_total2 || kdensity def_ido2, title("Densidad del superávit/déficit docente - Educación Básica") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit Idoneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
-	graph export "$output\230123_def_basica_2022.png",replace
+	*graph export "$output\230123_def_basica_2022.png",replace
 	
 	graph box def_total2 def_ido2,title("Distribución del superávit/déficit docente - Educación Básica") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit Idoneo")) graphregion(c(white)) nooutsides ytitle("Diferencia")
-	graph export "$output\230123_boxplot_def_basica_2022.png",replace
+	*graph export "$output\230123_boxplot_def_basica_2022.png",replace
 	
 	
 	
@@ -261,23 +266,23 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*1-NO NETEO! Regional
 	preserve	
 	collapse (sum) def_total2 if d_def_tot2==1 , by(cod_reg_rbd)
-				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica,modify) firstrow(var) cell(B2)
+				export excel using "$output\230209_n_def_doc_reg_2022_v2", sheet(basica,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 if d_def_ido2==1 , by(cod_reg_rbd)
-				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica,modify) firstrow(var) cell(E2)
+				export excel using "$output\230209_n_def_doc_reg_2022_v2", sheet(basica,modify) firstrow(var) cell(E2)
 	restore 
 	
 	*2 - Neteo Regional
 		preserve	
 	collapse (sum) def_total2  , by(cod_reg_rbd)
-				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_neto,modify) firstrow(var) cell(B2)
+				export excel using "$output\230209_n_def_doc_reg_2022_v2", sheet(basica_neto,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2  , by(cod_reg_rbd)
-				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_neto,modify) firstrow(var) cell(E2)
+				export excel using "$output\230209_n_def_doc_reg_2022_v2", sheet(basica_neto,modify) firstrow(var) cell(E2)
 	restore 
 	
 
@@ -299,23 +304,23 @@ Basica_neto_com: Se debe generar una dummy si el valor es negativo o no, asi lue
 	*1-NO NETEO! Comunal
 	preserve	
 	collapse (sum) def_total2 (first) cod_reg_rbd if d_def_tot2==1 , by(cod_com_rbd)
-				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230209_n_def_doc_reg_2022_v2", sheet(basica_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 (first) cod_reg_rbd if d_def_ido2==1 , by(cod_com_rbd)
-				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_com,modify) firstrow(var) cell(E2)
+				export excel using "$output\230209_n_def_doc_reg_2022_v2", sheet(basica_com,modify) firstrow(var) cell(E2)
 	restore 
 	
 	*2 - Neteo Comunal
 		preserve	
 	collapse (sum) def_total2 (first) cod_reg_rbd , by(cod_com_rbd)
-				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_neto_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230209_n_def_doc_reg_2022_v2", sheet(basica_neto_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 (first) cod_reg_rbd  , by(cod_com_rbd)
-				export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(basica_neto_com,modify) firstrow(var) cell(E2)
+				export excel using "$output\230209_n_def_doc_reg_2022_v2", sheet(basica_neto_com,modify) firstrow(var) cell(E2)
 	restore 
 
 **# Analisis por Dependencia

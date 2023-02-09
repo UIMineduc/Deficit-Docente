@@ -229,9 +229,9 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	local i=1
 	foreach var in leng mat cs hist{
 		gen def_`var'1=ofta_hrs1 - dda_hrs_`var' if asignatura==`i'
-			replace def_`var'1=def_`var'1/(44*0.65)
+			replace def_`var'1=def_`var'1/(30*0.65)
 		gen def_ido_`var'1=ofta_hrs_ido1 - dda_hrs_`var' if asignatura==`i'
-			replace def_ido_`var'1=def_ido_`var'1/(44*0.65)
+			replace def_ido_`var'1=def_ido_`var'1/(30*0.65)
 	local i=`i'+1
 	}
 
@@ -240,15 +240,16 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	local i=1
 	foreach var in leng mat cs hist{
 		gen def_`var'2=ofta_hrs2 - dda_hrs_`var' if asignatura==`i'
-					replace def_`var'2=(def_`var'2)/(44*0.65)
+					replace def_`var'2=(def_`var'2)/(30*0.65)
 		gen def_ido_`var'2=ofta_hrs_ido2- dda_hrs_`var' if asignatura==`i'
-					replace def_ido_`var'2=(def_ido_`var'2)/(44*0.65)
+					replace def_ido_`var'2=(def_ido_`var'2)/(30*0.65)
 	local i=`i'+1
 	}
 
 	
 	
 **# Figuras: Distribución de las variables
+*Esta sección mostraba el comportamiento de las horas1 horas2 y la suma de ambas horas finalmente terminamos usando la suma :D
 
 /* Graficos antiguos
 	foreach var in mat {
@@ -266,17 +267,18 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 * Graficos Minuta
 	*Cambiar titulo del gráfico de forma manual
 	foreach var in hist    {
-	twoway kdensity def_`var'2 || kdensity def_ido_`var'2, title("Densidad del superávit/déficit docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
-	graph export "$output\230123_def_doc_`var'_2022_distr.png", replace
+	twoway kdensity def_`var'2 || kdensity def_ido_`var'2, title("Densidad de la dif. de horas docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
+	graph export "$output\230209_def_doc_`var'_2022_distr.png", replace
 	}
 	
 	foreach var in hist    {
-	graph box def_`var'2  def_ido_`var'2, title("Densidad del superávit/déficit docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) graphregion(c(white)) nooutsides
-	graph export "$output\230123_def_doc_`var'_2022__boxplot.png",replace
+	graph box def_`var'2  def_ido_`var'2, title("Densidad de la dif. de horas docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) graphregion(c(white)) nooutsides
+	graph export "$output\230209_def_doc_`var'_2022__boxplot.png",replace
 	}
 	
 
-	graph box def_*2, title("Distribución del superávit/déficit docente en Ens. Media") ///
+	graph box def_*2, title("Distribución diferencia de horas docentes en Ens. Media") ///
+	subtitle("por asignatura") ///
 	legend(label(1 "Dif. Lenguaje Total") ///
 	label(2 "Dif. Lenguaje Idoneo") ///
 	label(3 "Dif. Matemáticas Total") ///
@@ -287,9 +289,9 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	label(8 "Dif. Historia Idoneo")) ///
 	graphregion(c(white)) nooutsides ///
 	ytitle("Diferencia")
-	graph export "$output\230123_def_doc_media_2022__boxplot.png",replace
+	graph export "$output\230209_def_doc_media_2022__boxplot.png",replace
 
-	twoway kdensity def_*2 || kdensity def_ido_*2, title("Densidad del superávit/déficit docente en Historia")  xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
+	*twoway kdensity def_*2 || kdensity def_ido_*2, title("Densidad del superávit/déficit docente en Historia")  xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
 
 
 
@@ -311,12 +313,15 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	local i=`i'+1
 	}
 
-	save "ofta_dda_media_2022.dta",replace
+	*save "ofta_dda_media_2022.dta",replace
+	tempfile simulacion_media
+	save `simulacion_media'
 	
 	
 **# Exportar a excel - resultados
 
-	use "ofta_dda_media_2022",clear
+	*use "ofta_dda_media_2022",clear
+	use `simulacion_media',clear
 	
 /* REVISAR ESTA SECCION DEL CODIGO
 *suma de docentes faltantes
@@ -343,7 +348,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*/		
 		
 *Promedio de deficit por región
-	use "ofta_dda_media_2022",clear
+	*use "ofta_dda_media_2022",clear
 	
 		*Podemos generar la tabla acá
 	foreach var in leng mat cs hist {
@@ -351,28 +356,32 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	}
 	
 *% de establecimientos con déficit por región y asignatura	
-* leng mat cs hist
-* cada variable debe imputarse manualmente para las celdas b2 g2 l2 q2
-	foreach var in hist {
+local i=2
+	foreach var in leng mat cs hist {
+	local letter: word `i' of `c(ALPHA)'
+	display "`letter'"
 		preserve
 	collapse (mean) d_def_`var'2 d_def_ido_`var'2 , by(cod_reg_rbd)
-	export excel using "$output\230123_n_def_doc_reg_2022_v2", sheet(media_ee,modify) firstrow(var) cell(q2)
+	export excel using "$output\230209_n_def_doc_reg_2022_v2", sheet(media_ee,modify) firstrow(var) cell("`letter'2")
 	restore
+	local i=`i'+5
 	}
 	
+	
+
 ******Total de docentes que faltan por región y asignatura
 	*1-NO NETEO! Regional
 	foreach var in leng mat cs hist {
 	preserve	
 	
 	collapse (sum) def_`var'2  if d_def_`var'2==1 , by(cod_reg_rbd)
-	export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media,modify) firstrow(var) cell(A2)
+	export excel using "$output\230209_n_doc_media_reg_22_`var'", sheet(media,modify) firstrow(var) cell(A2)
 	restore 
 
 	preserve	
 	
 	collapse (sum) def_ido_`var'2 if d_def_ido_`var'2==1 , by(cod_reg_rbd)
-	export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media,modify) firstrow(var) cell(E2)
+	export excel using "$output\230209_n_doc_media_reg_22_`var'", sheet(media,modify) firstrow(var) cell(E2)
 				
 	restore 
 	
@@ -380,13 +389,13 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	preserve
 	
 	collapse (sum) def_`var'2  , by(cod_reg_rbd)
-	export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_neto,modify) firstrow(var) cell(A2)
+	export excel using "$output\230209_n_doc_media_reg_22_`var'", sheet(media_neto,modify) firstrow(var) cell(A2)
 				
 	restore 
 
 	preserve	
 	collapse (sum) def_ido_`var'2  , by(cod_reg_rbd)
-				export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_neto,modify) firstrow(var) cell(E2)
+				export excel using "$output\230209_n_doc_media_reg_22_`var'", sheet(media_neto,modify) firstrow(var) cell(E2)
 	restore 
 	
 
@@ -395,28 +404,32 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*1-NO NETEO! Comunal
 	preserve	
 	collapse (sum) def_`var'2 (first) cod_reg_rbd if d_def_`var'2==1 , by(cod_com_rbd)
-				export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230209_n_doc_media_reg_22_`var'", sheet(media_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd if d_def_ido_`var'2==1 , by(cod_com_rbd)
-				export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_com,modify) firstrow(var) cell(E2)
+				export excel using "$output\230209_n_doc_media_reg_22_`var'", sheet(media_com,modify) firstrow(var) cell(E2)
 	restore 
 	
 	*2 - Neteo Comunal
 		preserve	
 	collapse (sum) def_`var'2 (first) cod_reg_rbd , by(cod_com_rbd)
-				export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_neto_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230209_n_doc_media_reg_22_`var'", sheet(media_neto_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd  , by(cod_com_rbd)
-				export excel using "$output\230123_n_doc_media_reg_22_`var'", sheet(media_neto_com,modify) firstrow(var) cell(E2)
+				export excel using "$output\230209_n_doc_media_reg_22_`var'", sheet(media_neto_com,modify) firstrow(var) cell(E2)
 	restore 
 	}	
 	
+	
+	
+	
+	
 **# Analisis - Dependencia
-
+{
 	use "ofta_dda_media_2022",clear
 	
 	
@@ -506,7 +519,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		local j=`j'+5
 	}	
 	
-	
+}	
 	
 
 	
