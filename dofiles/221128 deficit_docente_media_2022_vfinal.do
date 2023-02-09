@@ -267,17 +267,17 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 * Graficos Minuta
 	*Cambiar titulo del gráfico de forma manual
 	foreach var in hist    {
-	twoway kdensity def_`var'2 || kdensity def_ido_`var'2, title("Densidad de la dif. de horas docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
+	twoway kdensity def_`var'2 || kdensity def_ido_`var'2, title("Densidad de la dif. estimada de docentes en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
 	graph export "$output\230209_def_doc_`var'_2022_distr.png", replace
 	}
 	
 	foreach var in hist    {
-	graph box def_`var'2  def_ido_`var'2, title("Densidad de la dif. de horas docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) graphregion(c(white)) nooutsides
+	graph box def_`var'2  def_ido_`var'2, title("Densidad de la dif. estimada de docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) graphregion(c(white)) nooutsides
 	graph export "$output\230209_def_doc_`var'_2022__boxplot.png",replace
 	}
 	
 
-	graph box def_*2, title("Distribución diferencia de horas docentes en Ens. Media") ///
+	graph box def_*2, title("Distribución diferencia estimada de docentes en Ens. Media") ///
 	subtitle("por asignatura") ///
 	legend(label(1 "Dif. Lenguaje Total") ///
 	label(2 "Dif. Lenguaje Idoneo") ///

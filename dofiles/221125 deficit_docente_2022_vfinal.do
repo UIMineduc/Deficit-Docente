@@ -224,11 +224,11 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	graph export "$output\221129_boxplot_def_basica_2022.png",replace
 	*/
 	**# Graficos
-	twoway kdensity def_total2 || kdensity def_ido2, title("Densidad del superávit/déficit docente - Educación Básica") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit Idoneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
-	*graph export "$output\230123_def_basica_2022.png",replace
+	twoway kdensity def_total2 || kdensity def_ido2, title("Densidad dif. estimada de docentes en Ens. Básica") legend(label(1 "Docentes Totales") label(2 "Docentes Idoneo")) xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
+	graph export "$output\230209_def_basica_2022.png",replace
 	
-	graph box def_total2 def_ido2,title("Distribución del superávit/déficit docente - Educación Básica") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit Idoneo")) graphregion(c(white)) nooutsides ytitle("Diferencia")
-	*graph export "$output\230123_boxplot_def_basica_2022.png",replace
+	graph box def_total2 def_ido2,title("Distribución dif. estimada de docentes Educación Básica") legend(label(1 "Docentes Total") label(2 "Docentes Idoneo")) graphregion(c(white)) nooutsides ytitle("Diferencia")
+	graph export "$output\230209_boxplot_def_basica_2022.png",replace
 	
 	
 	
