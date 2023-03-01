@@ -25,7 +25,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*keep if persona==1
 		
 	drop estado_estab persona
-	keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1 id_itc
+	keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1 id_itc nom_reg_rbd
 	
 	
 **# Análisis
@@ -85,6 +85,8 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 	tab `var'
 	 }
 	 
+	 
+	 tabstat ido_*, by(cod_reg_rbd)
 	 ********************************************************************************
 	********************************************************************************
 		

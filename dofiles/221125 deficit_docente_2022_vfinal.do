@@ -56,6 +56,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 replace ido_bas=1 if tip_tit_id_1==13 & inlist(2,nivel1,nivel2) & inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001)
 
 	 tab ido_bas // proporción de idoneos es el 64%
+	 tabstat ido_bas , by(cod_reg_rbd)
 
 	********************************************************************************
 	* Horas totales del establecimiento*
