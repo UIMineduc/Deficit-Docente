@@ -32,7 +32,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*keep if persona==1
 	
 	drop estado_estab persona
-	keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 tip_tit_id_2 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1 esp_id_2 id_itc
+	keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 tip_tit_id_2 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1 esp_id_2 id_itc tip_insti_id_1 tip_insti_id_2
 	
 	order cod_reg_rbd cod_com_rbd cod_depe2 rural_rbd rbd mrun
 	
@@ -50,11 +50,11 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*Este se considera el universo de docentes
 		keep if inlist(1,id_ifp,id_ifs)
 		keep if inlist(110,cod_ens_1,cod_ens_2)
-		*keep if inlist(sector1,110,120,130,190) | inlist(sector2,110,120,130,190)
-		*keep if inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001) | inlist(subsector2,11001,11004,12001,12002,13001,13002,13003,13004,19001)
+
 
 	codebook mrun rbd
-	*Tenemos un total de 117,075 docentes como universo final de basica usando ifp + ifs
+	*Tenemos un total de 114.483 docentes como universo final de basica usando ifp + ifs
+	* Con un total de 112.225 únicos
 	*considerando un total de 4,873 RBD como universo usando ifp + ifs
 	
 	****************************************************************************
@@ -75,7 +75,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	gen ido_bas1=.
 		replace ido_bas1=0 if nivel1==2 & inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001)
 		
-	*Nota: Es codigo debería cambiar el título y ser más inclusivo( Parv y básica = 15, basica y media = 16)
+	*titulo en pedagogia y hacer clases en básica
 		replace ido_bas1=1 if titulo_pedagogia==1 & nivel1==2 & inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001)
 		
 	gen ido_bas2=.
@@ -93,6 +93,49 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 tab tasa_idoneidad // proporción de idoneos es el 63,65%
 	 tabstat tasa_idoneidad , by(cod_reg_rbd) save f( %9.2f)
 	 
+**# Estadística descriptiva Cargo Docente
+	*tasa de idoneidad docente en básica
+	tabstat tasa_idoneidad, by(cod_depe2)
+	
+	*Distribución horas_aula 
+	*opcion 1*
+	summarize horas_aula,d 
+	local mediana= `r(p50)'
+	
+	kdensity horas_aula, lcolor("15 105 180"*0.8) ///
+	xline(`mediana',lcolor("235 60 70"*0.8))  ///
+	graphregion(c(white)) ///
+	title("Distribución horas de aula, Ed. básica",color(black) margin(medium)) ///
+	xtitle("Horas de aula") ///
+	ytitle("Densidad") ///
+	note("Notas:Horas cronológicas")
+	
+	*opcion 2
+	summarize horas_aula,d 
+	local mediana= `r(p50)'
+	
+	histogram horas_aula, width(1) discrete ///
+	xline(`mediana',lcolor("235 60 70"*0.8))  ///
+	graphregion(c(white)) ///
+	title("Distribución horas de aula, Ed. básica",color(black) margin(medium)) ///
+	xtitle("Horas de aula") ///
+	ytitle("Densidad") ///
+	xlabel(0 5 10 15 20 25 30 35 40 44) ///
+	note("Notas:Horas cronológicas")
+	
+	**# Caracterizacion Docentes Basica
+	
+	graph box horas_aula, nooutsides
+	
+	gen aux=horas1+horas2
+	summarize aux,d
+	
+	table id_itc cod_depe2
+	
+	** Tablas
+	tab cod_depe2
+	tab sector1
+	tab id_ifs
 
 	********************************************************************************
 **# Oferta de horas por RBD y Asignatura
@@ -180,9 +223,8 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	order doc_ifp doc_ifs, a(rbd)
 	
-	*tenemos 7892 rbd con los sectores núcleares en básica. El dato anterior considera otras áreas fuera de NB.
-	*el codebook arroja 4.873 establecimientos, wtf? 
-	**REVISAR ESTE NMERO **
+
+	*el codebook arroja 4.873 establecimientos
 	
 **# Horas totales y Horas Lectivas
 	*Horas disponibles del RBD
@@ -224,7 +266,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	save `dda'
 	restore
 
-	merge 1:1 rbd cod_ense2 using `dda', keepusing( n_cursos dda_hrs_basica)
+	merge 1:1 rbd cod_ense2 using `dda', keepusing(n_cursos dda_hrs_basica)
 	keep if _merge==3
 	*drop if _merge==1 //53 RBD con docentes pero sin matricula. 
 	*drop if _merge==2 //3.154 rbd con cursos pero sin docentes ????
@@ -274,10 +316,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	**# Graficos - Horas totales - DENSIDAD
 	
-	twoway kdensity def_total2, lp(solid) lcolor("15 105 180"*0.8) lw(medthick)  || ///
-	kdensity def_ido2, lp(dash) lw(medthick) lcolor("235 60 70"*0.8) ///
+	twoway kdensity def_total2 if def_total2<=0 , lp(solid) lcolor("15 105 180"*0.8) lw(medthick)  || ///
+	kdensity def_ido2 if def_ido2<=0, lp(dash) lw(medthick) lcolor("235 60 70"*0.8) ///
 	title("Densidad dif. estimada de docentes en Ens. Básica",color(black) margin(medium) ) ///
-	legend(label(1 "Docentes Totales") label(2 "Docentes Idoneo") region(fcolor(none) lcolor(none))) ///
+	legend(label(1 "Docentes Totales") label(2 "Docentes Idóneos") region(fcolor(none) lcolor(none))) ///
 	xtitle("Diferencia docentes estimada") ytitle("Densidad") ///
 	graphregion(c(white))
 	
@@ -286,21 +328,21 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	**# Graficos - Horas totales - BOXPLOT
 	graph box def_total2 def_ido2, ///
 	title("Distribución dif. estimada de docentes Educación Básica",color(black) margin(medium)) ///
-	legend(label(1 "Docentes Total") label(2 "Docentes Idoneo")) ///
+	legend(label(1 "Docentes Totales") label(2 "Docentes Idóneos")) ///
 	graphregion(c(white)) ///
 	box(1, color("15 105 180"*0.8)) ///
 	box(2, color("235 60 70"*0.8)) ///
 	nooutsides ytitle("Diferencia") ///
 	legend(region(fcolor(none) lcolor(none))) ///
-	note("Se excluyen los valores externos")
+	note("Nota: Se excluyen los valores externos") ///
+	yline(0, lpattern(solid) lcolor(black*0.6))
 	
 	graph export "$output\230505_boxplot_def_basica_2022.png",replace
-	
-	
 	
 	*agregamos data administrativa
 	merge 1:1 rbd using "$directorio\directorio_2022", nogen keep(3)  keepusing(cod_reg_rbd cod_com_rbd cod_depe2)
 
+	
 **# Tablas finales
 	*Indicador por region y comuna
 	bys cod_com_rbd: gen id_com=_n==1
@@ -323,7 +365,6 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*% de EE con déficit por región
 	
 	save "230505_ofta_dda_basica_2022.dta",replace
-	
 	
 	*tabstat d_def_tot1 d_def_ido1 d_def_tot2 d_def_ido2, by(cod_reg_rbd)
 	tabstat d_def_tot2 d_def_ido2, by(cod_reg_rbd) s(mean) f(%9.2f)
