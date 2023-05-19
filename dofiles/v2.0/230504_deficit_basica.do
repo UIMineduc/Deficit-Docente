@@ -15,7 +15,7 @@ global docentes "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MIN
 global matricula22 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2022"
 global matricula18 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2018"
 global directorio "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Directorios"
-global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output"
+global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output\v2"
 
 
 
@@ -142,7 +142,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	* Horas totales del establecimiento*
 	*Por subsector1
 	preserve
-	collapse (sum) horas1, by(rbd sector1 subsector1)
+	collapse (sum) horas1 , by(rbd sector1 subsector1)
 		keep if inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001)
 	tempfile ofta1
 	save `ofta1',replace 
@@ -242,7 +242,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	gen hrs_aula_ido2=hrs_ido1+hrs_ido2
 	gen hrs_lect_ido2=hrs_aula_ido2*4*0.65
 	
-	collapse (sum) hrs_lect1 hrs_lect_ido1 hrs_lect2 hrs_lect_ido2 (first) doc_ifp doc_ifs, by(rbd)
+	collapse (sum) hrs_lect1 hrs_lect_ido1 hrs_lect2 hrs_lect_ido2 (first) doc_ifp doc_ifs , by(rbd)
 	
 	rename (hrs_lect1 hrs_lect2) (ofta_hrs1 ofta_hrs2)
 	rename (hrs_lect_ido1 hrs_lect_ido2) (ofta_hrs_ido1 ofta_hrs_ido2)
@@ -250,7 +250,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*El sufijo 2 hace referencia al total de horas
 	
 	*Nota: Tenemos 4,881 rbd
-	*Nota: Tenemos 4,873 rbd en la revision 
+	*Nota: Tenemos 4,873 rbd en la revision pq borramos reemplazos
 	
 	gen cod_ense2=2
 
@@ -260,17 +260,26 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 **# Merge Oferta y Demanda de EE
 
 	preserve
-	use "dda_hrs_rbd_nivel_2022.dta",clear
+	use "dda_hrs_rbd_nivel_2022_38sem.dta",clear
 	keep if cod_ense2==2
+	keep if rural_rbd==0
 	tempfile dda
 	save `dda'
 	restore
 
 	merge 1:1 rbd cod_ense2 using `dda', keepusing(n_cursos dda_hrs_basica)
+	rename _merge merge_dda
+	*drop if _merge==1 //53 RBD con docentes pero sin matricula en el nivel. 
+	*drop if _merge==2 //21 RBD con cursos pero sin docentes principales
+	
+	*agregamos data administrativa
+	merge 1:1 rbd using "$directorio\directorio_2022",  keepusing(cod_reg_rbd cod_com_rbd cod_depe2)
 	keep if _merge==3
-	*drop if _merge==1 //53 RBD con docentes pero sin matricula. 
-	*drop if _merge==2 //3.154 rbd con cursos pero sin docentes ????
 	drop _merge
+	
+	tab merge_dda cod_depe2
+	drop if merge_dda!=3
+	drop merge_dda
 	
 	*Nos quedamos con 4.820 EE completos
 
@@ -316,14 +325,14 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	**# Graficos - Horas totales - DENSIDAD
 	
-	twoway kdensity def_total2 if def_total2<=0 , lp(solid) lcolor("15 105 180"*0.8) lw(medthick)  || ///
-	kdensity def_ido2 if def_ido2<=0, lp(dash) lw(medthick) lcolor("235 60 70"*0.8) ///
+	twoway kdensity def_total2  , lp(solid) lcolor("15 105 180"*0.8) lw(medthick)  || ///
+	kdensity def_ido2 , lp(dash) lw(medthick) lcolor("235 60 70"*0.8) ///
 	title("Densidad dif. estimada de docentes en Ens. Básica",color(black) margin(medium) ) ///
 	legend(label(1 "Docentes Totales") label(2 "Docentes Idóneos") region(fcolor(none) lcolor(none))) ///
 	xtitle("Diferencia docentes estimada") ytitle("Densidad") ///
 	graphregion(c(white))
 	
-	graph export "$output\230505_def_basica_2022.png",replace
+	graph export "$output\230519_def_basica_2022_38sem.png",replace
 
 	**# Graficos - Horas totales - BOXPLOT
 	graph box def_total2 def_ido2, ///
@@ -337,10 +346,8 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	note("Nota: Se excluyen los valores externos") ///
 	yline(0, lpattern(solid) lcolor(black*0.6))
 	
-	graph export "$output\230505_boxplot_def_basica_2022.png",replace
+	graph export "$output\230519_boxplot_def_basica_2022_38sem.png",replace
 	
-	*agregamos data administrativa
-	merge 1:1 rbd using "$directorio\directorio_2022", nogen keep(3)  keepusing(cod_reg_rbd cod_com_rbd cod_depe2)
 
 	
 **# Tablas finales
@@ -364,7 +371,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		
 	*% de EE con déficit por región
 	
-	save "230505_ofta_dda_basica_2022.dta",replace
+	save "230519_ofta_dda_basica_2022_38sem.dta",replace
 	
 	*tabstat d_def_tot1 d_def_ido1 d_def_tot2 d_def_ido2, by(cod_reg_rbd)
 	tabstat d_def_tot2 d_def_ido2, by(cod_reg_rbd) s(mean) f(%9.2f)
@@ -413,12 +420,12 @@ Basica_neto_com: Se debe generar una dummy si el valor es negativo o no, asi lue
 	*1-NO NETEO! Comunal
 	preserve	
 	collapse (sum) def_total2 (first) cod_reg_rbd if d_def_tot2==1 , by(cod_com_rbd)
-				export excel using "$output\230505_n_def_doc_reg_2022_v2", sheet(basica_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230519_n_def_doc_38sem_2022_v2", sheet(basica_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 (first) cod_reg_rbd if d_def_ido2==1 , by(cod_com_rbd)
-				export excel using "$output\230505_n_def_doc_reg_2022_v2", sheet(basica_com,modify) firstrow(var) cell(E2)
+				export excel using "$output\230519_n_def_doc_38sem_2022_v2", sheet(basica_com,modify) firstrow(var) cell(F2)
 	restore 
 	
 /* CODIGOS DE ESCENARIOS, NO BORRAR
@@ -453,13 +460,13 @@ Basica_neto_com: Se debe generar una dummy si el valor es negativo o no, asi lue
 	preserve	
 	collapse (sum) def_total2 (first) cod_reg_rbd if d_def_tot2==1 , by(cod_com_rbd depe)
 	sort depe cod_com_rbd
-	export excel using "$output\230505_n_def_doc_reg_2022_v2", sheet(depe_basica,modify) firstrow(var) cell(B2)
+	export excel using "$output\230519_n_def_doc_10m_2022_v2", sheet(depe_basica,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 (first) cod_reg_rbd if d_def_ido2==1 , by(cod_com_rbd depe)
 	sort depe cod_com_rbd
-	export excel using "$output\230505_n_def_doc_reg_2022_v2", sheet(depe_basica,modify) firstrow(var) cell(F2)
+	export excel using "$output\230519_n_def_doc_10m_2022_v2", sheet(depe_basica,modify) firstrow(var) cell(F2)
 	restore 
 	
 
