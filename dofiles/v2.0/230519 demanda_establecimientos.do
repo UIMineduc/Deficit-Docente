@@ -68,8 +68,14 @@ global ramos_ee "basica hist cs leng mate fg fd ingles educ_fisica educ_tecno fi
 global core "basica hist cs leng mate"
 global media "hist cs leng mate"
 
+**** NOOTAAAAAA ****
+* TENEMOS 2 PLANES DE ESTUDIO
+* 1- 10 MESES
+* 2 - 38 SEMANAS
+* MODIFICAR EL MERGE MANUAL PARA VER CÓMO SE COMPORTA EL DEFICIT
+
 sort rbd id_grado
-merge m:1 id_grado using "plan_de_estudios_2022_10_m.dta", keepusing($core) keep(3) nogen
+merge m:1 id_grado using "plan_de_estudios_2022_38_sem.dta", keepusing($core) keep(3) nogen
 
 	**# Demanda de horas
 	
@@ -83,7 +89,7 @@ gen dda_hrs_basica=basica*n_cursos
 collapse (sum)  dda_hrs_basica dda_hrs_hist dda_hrs_cs dda_hrs_leng dda_hrs_mate  (first) n_cursos cod_depe2 rural_rbd, by(rbd cod_ense2)
 
 
-save "dda_hrs_rbd_nivel_2022_10m.dta",replace
+save "dda_hrs_rbd_nivel_2022_38sem.dta",replace
 
 
 /* Esta sección ya no se considera, pero dejo el código para futuras revisiones

@@ -374,7 +374,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	save "230519_ofta_dda_basica_2022_38sem.dta",replace
 	
 	*tabstat d_def_tot1 d_def_ido1 d_def_tot2 d_def_ido2, by(cod_reg_rbd)
-	tabstat d_def_tot2 d_def_ido2, by(cod_reg_rbd) s(mean) f(%9.2f)
+	tabstat d_def_tot2 d_def_ido2, by(cod_reg_rbd) s(mean) f(%9.4f)
 
 	**# Total de docentes que faltan por región
 /* OJO PIOJOOOO , NOTA: ESTE CODIGO PODRIA SERVIR EN ALGUN MOMENTO, NO BORRAR!!!!
@@ -447,11 +447,12 @@ Basica_neto_com: Se debe generar una dummy si el valor es negativo o no, asi lue
 	*Definición de Dependencia
 	*generamos la dependencia para el CEM entre público y part.sub
 	gen depe=.
-		replace depe=1 if inlist(cod_depe2,1,5)
+		replace depe=1 if cod_depe2==1
 		replace depe=2 if inlist(cod_depe2,2,4)
 		replace depe=3 if cod_depe2==3
+		replace depe=4 if cod_depe2==5
 		
-	label define depe 1 "Público" 2 "Subvencionado" 3 "Particular"
+	label define depe 1 "Público" 2 "Subvencionado" 3 "Particular" 4 "SLEP"
 	label  values depe depe
 	
 	
@@ -460,13 +461,13 @@ Basica_neto_com: Se debe generar una dummy si el valor es negativo o no, asi lue
 	preserve	
 	collapse (sum) def_total2 (first) cod_reg_rbd if d_def_tot2==1 , by(cod_com_rbd depe)
 	sort depe cod_com_rbd
-	export excel using "$output\230519_n_def_doc_10m_2022_v2", sheet(depe_basica,modify) firstrow(var) cell(B2)
+	export excel using "$output\230519_n_def_doc_38sem_2022_v2", sheet(depe_basica,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 (first) cod_reg_rbd if d_def_ido2==1 , by(cod_com_rbd depe)
 	sort depe cod_com_rbd
-	export excel using "$output\230519_n_def_doc_10m_2022_v2", sheet(depe_basica,modify) firstrow(var) cell(F2)
+	export excel using "$output\230519_n_def_doc_38sem_2022_v2", sheet(depe_basica,modify) firstrow(var) cell(F2)
 	restore 
 	
 

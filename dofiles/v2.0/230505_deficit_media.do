@@ -9,7 +9,7 @@ global docentes "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MIN
 global matricula22 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2022"
 global matricula18 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2018"
 global directorio "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Directorios"
-global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output"
+global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output\v2"
 
 
 *3- Determinar cuántos docentes titulados por materia seleccionada ejercen como función principal la docencia de aula en cada rbd.
@@ -141,11 +141,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 }
 	 
 	 
-	 tabstat ido_*, by(cod_reg_rbd)
+	 tabstat tasa_*
 	 ********************************************************************************
 	********************************************************************************
-		
-		* Horas totales del establecimiento*
+**# Horas totales del establecimiento*
 	*Por subsector1
 	preserve
 	collapse (sum) horas1, by(rbd sector1 subsector1)
@@ -224,6 +223,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	drop ifp ifs
 
+**# Horas totales y Horas Lectivas
 	*Horas disponibles del RBD
 	*solo horas1
 	gen hrs_aula1=horas1
@@ -258,19 +258,21 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*Generamos el cod_ense2 para hacer el match con la demanda de horas por nivel de cada RBD
 	gen cod_ense2=5
 
+****************************************************************************
+
 	
 
 **# Merge demanda y oferta + info administrativa
 
 	preserve
-	use "dda_hrs_rbd_nivel_2022.dta",clear
+	use "dda_hrs_rbd_nivel_2022_38sem.dta",clear
 	keep if cod_ense2==5
 	tempfile dda
 	save `dda'
 	restore
 
 	merge m:1 rbd cod_ense2 using `dda', keepusing( n_cursos dda_hrs_*)
-	drop if _merge==1 //89 RBD con docentes pero sin matricula. y 149 RBD con matricula pero sin docente, ojo uqe solo consideramos urbanos
+	drop if _merge==1 //89 RBD con docentes pero sin matricula. y 150 RBD con matricula pero sin docente, ojo uqe solo consideramos urbanos
 	drop if _merge==2 //150 no hacen merge
 	drop _merge
 	drop dda_hrs_basica
@@ -279,13 +281,9 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*agregamos data administrativa
 	merge m:1 rbd using "$directorio\directorio_2022", nogen keep(3) keepusing(cod_reg_rbd cod_com_rbd cod_depe2) 
 	
-
 	
-
 **# Cálculo del deficit
-	
-
-	
+		
 	*Deficit general e Idoneo - solo 1
 	local i=1
 	foreach var in leng mat cs hist{
@@ -307,9 +305,9 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	local i=`i'+1
 	}
 
-		drop if asignatura==.
+drop if asignatura==.
 	
-**# Figuras: Distribución de las variables
+	**# Figuras: Distribución de las variables
 *Esta sección mostraba el comportamiento de las horas1 horas2 y la suma de ambas horas finalmente terminamos usando la suma :D
 
 /* Graficos antiguos
@@ -325,7 +323,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*/
 
 
-* Graficos Minuta
+	**# Graficos Minuta
 	*Cambiar titulo del gráfico de forma manual
 
 	local j=1
@@ -366,7 +364,7 @@ foreach var in leng mat cs hist{
 	graphregion(c(white)) nooutsides ///
 	ytitle("Diferencia") ///
 	note("Se excluyen los valores externos")
-	graph export "$output\230505_def_doc_media_2022__boxplot.png",replace
+	*graph export "$output\230505_def_doc_media_2022__boxplot.png",replace
 	
 	graph box def_ido_leng2 def_ido_mat2 def_ido_cs2 def_ido_hist2, title("Distribución diferencia estimada de docentes en Ens. Media") ///
 	subtitle("por asignatura") ///
@@ -376,12 +374,12 @@ foreach var in leng mat cs hist{
 	label(4 "Dif. Historia Idoneo")) ///
 	graphregion(c(white)) nooutsides ///
 	ytitle("Diferencia")
-	graph export "$output\230505_def_doc_media_2022_boxplot_ido.png",replace
+	*graph export "$output\230505_def_doc_media_2022_boxplot_ido.png",replace
 
 	*twoway kdensity def_*2 || kdensity def_ido_*2, title("Densidad del superávit/déficit docente en Historia")  xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
 
 
-
+**# Cálculo del Deficit
 	local i=1
 	foreach var in leng mat cs hist{
 	*horas 1
@@ -400,12 +398,12 @@ foreach var in leng mat cs hist{
 	local i=`i'+1
 	}
 
-	*save "ofta_dda_media_2022.dta",replace
+	*save "230523_ofta_dda_media_2022.dta",replace
 	tempfile simulacion_media
 	save `simulacion_media'
 	
-	
-**# Exportar a excel - resultados
+**# Base Final	
+	**# Exportar a excel - resultados
 
 	*use "ofta_dda_media_2022",clear
 	use `simulacion_media',clear
@@ -439,19 +437,20 @@ foreach var in leng mat cs hist{
 	
 		*Podemos generar la tabla acá
 	foreach var in leng mat cs hist {
+		display "Mostrando la situación para la asignatura `var'"
 		tabstat d_def_`var'2 d_def_ido_`var'2, by(cod_reg_rbd) s(mean)
 	}
 	
 	tabstat $listado , by(cod_reg_rbd) s(mean) f( %9.2f)
 	
-*% de establecimientos con déficit por región y asignatura	
+	**#% de establecimientos con déficit por región y asignatura	
 local i=2
 	foreach var in leng mat cs hist {
 	local letter: word `i' of `c(ALPHA)'
 	display "`letter'"
 		preserve
 	collapse (mean) d_def_`var'2 d_def_ido_`var'2 , by(cod_reg_rbd)
-	export excel using "$output\230505_n_def_doc_reg_2022_v2", sheet(media_ee,modify) firstrow(var) cell("`letter'2")
+	export excel using "$output\230519_n_doc_media_reg_2022_v38s", sheet(EE_def,modify) firstrow(var) cell("`letter'2")
 	restore
 	local i=`i'+5
 	}
@@ -495,127 +494,68 @@ local i=2
 	foreach var in leng mat cs hist {
 	preserve	
 	collapse (sum) def_`var'2 (first) cod_reg_rbd if d_def_`var'2==1 , by(cod_com_rbd)
-				export excel using "$output\230505_n_doc_media_reg_22_`var'", sheet(media_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230519_n_doc_media_reg_22_`var'_38s", sheet(media_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd if d_def_ido_`var'2==1 , by(cod_com_rbd)
-				export excel using "$output\230505_n_doc_media_reg_22_`var'", sheet(media_com,modify) firstrow(var) cell(E2)
+				export excel using "$output\230519_n_doc_media_reg_22_`var'_38s", sheet(media_com,modify) firstrow(var) cell(F2)
 	
 	restore 
 }	
 	
-	
-	*2 - Neteo Comunal
-/* CODIGO ANTIGUO
 
-		preserve	
-	collapse (sum) def_`var'2 (first) cod_reg_rbd , by(cod_com_rbd)
-				export excel using "$output\230505_n_doc_media_reg_22_`var'", sheet(media_neto_com,modify) firstrow(var) cell(B2)
-	restore 
-
-	preserve	
-	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd  , by(cod_com_rbd)
-				export excel using "$output\230505_n_doc_media_reg_22_`var'", sheet(media_neto_com,modify) firstrow(var) cell(E2)
-	restore 
-	}	
-	*/
-	
-	
 	
 	
 **# Analisis - Dependencia
-{
-	use "ofta_dda_media_2022",clear
+
+	use "230523_ofta_dda_media_2022",clear
 	
 	
+	*Definición de Dependencia
 	*generamos la dependencia para el CEM entre público y part.sub
 	gen depe=.
-		replace depe=1 if inlist(cod_depe2,1,5)
+		replace depe=1 if cod_depe2==1
 		replace depe=2 if inlist(cod_depe2,2,4)
 		replace depe=3 if cod_depe2==3
+		replace depe=4 if cod_depe2==5
 		
-	label define depe 1 "Público" 2 "Subvencionado" 3 "Particular"
+	label define depe 1 "Público" 2 "Subvencionado" 3 "Particular" 4 "SLEP"
 	label  values depe depe
-		
+	
 
 	foreach var in leng mat cs hist {
 	 tabstat def_ido_`var'2 if d_def_ido_`var'2 , by(depe) s(mean sd n)
 	}
+	
+		foreach var in leng mat cs hist {
+	 tabstat d_def_`var'2 d_def_ido_`var'2 , by(cod_reg_rbd) s(mean n)
+	}
+	
+	local i=1
+	foreach var in leng mat cs hist {
+	
+	bys rbd: egen aux`i'=max(d_def_`var'2)
+	local i=`i'+1
+		}
+	egen aux_asignacion=rowmiss(aux1 aux2 aux3 aux4)
 	
 	**# Dependencia - Lenguaje
 
-	frame create lenguaje
-	frame change lenguaje
-
-	use "ofta_dda_media_2022",clear
+	**# Tablas
+	*NO NETEO! Comunal
 	
 	foreach var in leng mat cs hist {
-	 tabstat def_ido_`var'2 if d_def_ido_`var'2 , by(depe) s(mean sd n)
+	preserve	
+	collapse (sum) def_`var'2 (first) cod_reg_rbd if d_def_`var'2==1 , by(cod_com_rbd depe)
+	sort depe cod_com_rbd
+	export excel using "$output\230519_def_media_depe", sheet("depe_`var'",modify) firstrow(var) cell(B2)
+	restore 
+
+	preserve	
+	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd if d_def_ido_`var'2==1 , by(cod_com_rbd depe)
+	sort depe cod_com_rbd
+	export excel using "$output\230519_def_media_depe", sheet("depe_`var'",modify) firstrow(var) cell(F2)
+	restore 
 	}
-	
-	*****Total de docentes que faltan por región y asignatura
-	*1-NO NETEO! Regional
-	
-	local j=2
-	foreach var in leng mat cs hist {
-	
-	preserve	
-	
-	collapse (sum) def_`var'2  if d_def_`var'2==1 , by(depe)
-	export excel using "$output\230505_dependencia2", sheet(media,modify) firstrow(var) cell(A`j')
-	restore 
-
-	
-	preserve	
-	
-	collapse (sum) def_ido_`var'2 if d_def_ido_`var'2==1  , by(depe)
-	export excel using "$output\230505_dependencia2", sheet(media,modify) firstrow(var) cell(C`j')
-				
-	restore 
-	
-	*2 - Neteo Regional
-	preserve
-	
-	collapse (sum) def_`var'2 , by(depe)
-	export excel using "$output\230505_dependencia2", sheet(media_neto,modify) firstrow(var) cell(F`j')
-				
-	restore 
-	
-
-	preserve	
-	collapse (sum) def_ido_`var'2  , by(depe)
-				export excel using "$output\230505_dependencia2", sheet(media_neto,modify) firstrow(var) cell(H`j')
-	restore 
-		
-
-******Total de docentes que faltan por comuna,región y asignatura
-
-	*1-NO NETEO! Comunal
-	preserve	
-	collapse (sum) def_`var'2 (first) cod_reg_rbd if d_def_`var'2==1  , by(depe)
-				export excel using "$output\230505_dependencia2", sheet(media_com,modify) firstrow(var) cell(L`j')
-	restore 
-
-	preserve	
-	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd if d_def_ido_`var'2==1, by(depe)
-				export excel using "$output\230505_dependencia2", sheet(media_com,modify) firstrow(var) cell(O`j')
-	restore 
-
-	*2 - Neteo Comunal
-		preserve	
-	collapse (sum) def_`var'2 (first) cod_reg_rbd  , by(depe)
-				export excel using "$output\230505_dependencia2", sheet(media_neto_com,modify) firstrow(var) cell(R`j')
-	restore 
-	
-	preserve	
-	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd  , by(depe)
-				export excel using "$output\230505_dependencia2", sheet(media_neto_com,modify) firstrow(var) cell(U`j')
-	restore 
-		local j=`j'+5
-	}	
-	
-}	
-	
-
 	
