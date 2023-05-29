@@ -7,17 +7,12 @@ cd "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\Data"
 
 global docentes "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Docentes\Cargos Docentes"
 global matricula22 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2022"
-global matricula18 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2018"
 global directorio "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Directorios"
-global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output\v2"
+global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output\v3"
 
 
-*3- Determinar cuántos docentes titulados por materia seleccionada ejercen como función principal la docencia de aula en cada rbd.
 
 **#Load Data
-	
-	*import delimited "$docentes\Docentes_2022_PUBLICA.csv", varnames(1) encoding(UTF-8) clear 
-	*save "$docentes\docentes_2022_publica.dta",replace
 	
 	use "$docentes\docentes_2022_publica.dta" ,clear
 	
@@ -58,12 +53,27 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*************************** Criterios de Idoneidad *************************
 	
 **# Idoneidad Docente
-	**# Ed Media Lenguaje
-	*sector1
-	gen titulo_leng=1 if (inlist(tip_tit_id_1,14,16) | inlist(tip_tit_id_2,14,16)) & (inlist(esp_id_1,141,1605) | inlist(esp_id_2,141,1605))
+
+	*Generamos los titulos
+	* Titulado en media y especialidad de la asignatura
+	gen titulo_leng=1 if (inlist(tip_tit_id_1,14,16) & inlist(esp_id_1,141,1605)) | ( inlist(tip_tit_id_2,14,16) &  inlist(esp_id_2,141,1605))
 	
+	gen titulo_mat=1 if (inlist(tip_tit_id_1,14,16) & inlist(esp_id_1,142,1606)) | 	( inlist(tip_tit_id_2,14,16) &  inlist(esp_id_2,142,1606))
+	
+	gen titulo_fisica=1 if (inlist(tip_tit_id_1,14) & inlist(esp_id_1,143)) |  (inlist(tip_tit_id_2,14) & inlist(esp_id_2,143))
+	
+	gen titulo_quimica=1 if (inlist(tip_tit_id_1,14) & inlist(esp_id_1,144)) |  (inlist(tip_tit_id_2,14) & inlist(esp_id_2,144))
+	
+	gen titulo_biologia=1 if (inlist(tip_tit_id_1,14) & inlist(esp_id_1,145,146)) |  (inlist(tip_tit_id_2,14) & inlist(esp_id_2,145,146))
+	
+	gen titulo_historia=1 if (tip_tit_id_1==14 & esp_id_1==148) | (tip_tit_id_2==14 & esp_id_2==148)
+	
+
+	**# Ed Media Lenguaje
+
+	*Realiza o no clases en lenguaje
 	forv i=1/2{
-	 gen ido_leng`i'=0 if titulo_leng!=1 & inlist(subsector`i',31001,31004)
+	 gen ido_leng`i'=0 if inlist(subsector`i',31001,31004)
 	 replace ido_leng`i'=1 if titulo_leng==1 & inlist(subsector`i',31001,31004)
 	}
 	
@@ -73,10 +83,9 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 
 	 
 	**# Ed Media Matematica
-	gen titulo_mat=1 if (inlist(tip_tit_id_1,14,16) | inlist(tip_tit_id_2,14,16)) & (inlist(esp_id_1,142,1606) | inlist(esp_id_2,142,1606))
-	
+
 	forv i=1/2{
-	 gen ido_mat`i'=0 if titulo_mat!=1 & inlist(subsector`i',32001,32002)
+	 gen ido_mat`i'=0 if inlist(subsector`i',32001,32002)
 	 replace ido_mat`i'=1 if titulo_mat==1 & inlist(subsector`i',32001,32002)
 	}
 	
@@ -88,17 +97,17 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		
 	**#Fisica
 	forv i=1/2{
-	 gen ido_fisica`i'=0 if (!inlist(tip_tit_id_`i',14) | !inlist(esp_id_`i',143)) & inlist(subsector`i',35003,35004)
-	 replace ido_fisica`i'=1 if inlist(tip_tit_id_`i',14) & inlist(esp_id_`i',143) & inlist(subsector`i',35003,35004)
+	 gen ido_fisica`i'=0 if inlist(subsector`i',35003,35004)
+	 replace ido_fisica`i'=1 if titulo_fisica==1 & inlist(subsector`i',35003,35004)
 	}
 	
 	gen tasa_fisica=1 if inlist(1,ido_fisica1,ido_fisica2)
 		replace tasa_fisica=0 if (ido_fisica1==0 & ido_fisica2==0) | (ido_fisica1==0 & ido_fisica2==.) | (ido_fisica1==. & ido_fisica2==0)
-
+		
 	**#Quimica
 	forv i=1/2{
-	 gen ido_quimica`i'=0 if (!inlist(tip_tit_id_`i',14) | !inlist(esp_id_`i',144)) & inlist(subsector`i',35002,35004)
-	 replace ido_quimica`i'=1 if inlist(tip_tit_id_`i',14) & inlist(esp_id_`i',144) & inlist(subsector`i',35002,35004)
+	 gen ido_quimica`i'=0 if inlist(subsector`i',35002,35004)
+	 replace ido_quimica`i'=1 if titulo_quimica==1 & inlist(subsector`i',35002,35004)
 	}
 	
 	gen tasa_quimica=1 if inlist(1,ido_quimica1,ido_quimica2)
@@ -106,8 +115,8 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	**#Biologia
 	forv i=1/2{
-	 gen ido_biologia`i'=0 if (!inlist(tip_tit_id_`i',14) | !inlist(esp_id_`i',145,146)) & inlist(subsector`i',35001,35004) 
-	 replace ido_biologia`i'=1 if inlist(tip_tit_id_`i',14) & inlist(esp_id_`i',145,146) & inlist(subsector`i',35001,35004)
+	 gen ido_biologia`i'=0 if inlist(subsector`i',35001,35004) 
+	 replace ido_biologia`i'=1 if titulo_biologia==1 & inlist(subsector`i',35001,35004)
 	}
 
 	gen tasa_bio=1 if inlist(1,ido_biologia1,ido_biologia2)
@@ -115,17 +124,16 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	**#Ciencias General
 		forv i=1/2{
-	gen ido_cs`i'=1 if (ido_fisica`i'==1|ido_quimica`i'==1|ido_biologia`i'==1)
-	replace ido_cs`i'=0 if (ido_fisica`i'==0|ido_quimica`i'==0|ido_biologia`i'==0)
+	egen ido_cs`i'=rowmax(ido_fisica`i' ido_quimica`i' ido_biologia`i')
 		}
-		
-	gen tasa_cs=1 if inlist(1,ido_cs1,ido_cs2)
-	replace tasa_cs=0 if (ido_cs1==0 & ido_cs2==0) | (ido_cs1==0 & ido_cs2==.) | (ido_cs1==. & ido_cs2==0)
+
+	egen tasa_cs=rowmax(ido_cs1 ido_cs2)
+
 	
 	**# Ed Media Historia
 		forv i=1/2{
-	gen ido_hist`i'=0 if (tip_tit_id_`i'!=14 | esp_id_`i'!=148)  & inlist(subsector`i',33001,33002)
-	replace ido_hist`i'=1 if tip_tit_id_`i'==14 & esp_id_`i'==148 & inlist(subsector`i',33001,33002)
+	gen ido_hist`i'=0 if inlist(subsector`i',33001,33002)
+	replace ido_hist`i'=1 if titulo_historia==1 & inlist(subsector`i',33001,33002)
 		}
 		
 	gen tasa_hist=1 if inlist(1,ido_hist1,ido_hist2)
@@ -135,8 +143,8 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 			forv i=1/2{
 	gen doc_ido`i'=1 if inlist(1,ido_leng`i',ido_mat`i',ido_cs`i',ido_hist`i')
 			}
-			
-	 foreach var of varlist  ido* {
+
+	 foreach var of varlist  tasa_* {
 	 	tab `var'
 	 }
 	 
@@ -145,38 +153,52 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 ********************************************************************************
 	********************************************************************************
 **# Horas totales del establecimiento*
-	*Por subsector1
+	**Por subsector1
+	* horas docentes
 	preserve
-	collapse (sum) horas1, by(rbd sector1 subsector1)
+	
 	keep if inlist(subsector1,31001,31004,32001,32002,33001,33002,35001,35002,35003,35004)
+	collapse (sum) horas1, by(rbd sector1 subsector1)
+	
 	tempfile ofta1
 	save `ofta1',replace 
 	restore
 	
+	* horas docentes idóneas
 	preserve
-	collapse (sum) horas1 if doc_ido1==1, by(rbd sector1 subsector1)
+	
 	keep if inlist(subsector1,31001,31004,32001,32002,33001,33002,35001,35002,35003,35004)
+	collapse (sum) horas1 if doc_ido1==1, by(rbd sector1 subsector1)
+
 	rename horas1 hrs_ido1
+	
 	tempfile ofta1_ido
 	save `ofta1_ido',replace 
 	restore
 	
 	*Por subsector2
+		* horas docentes
 	preserve
+		keep if inlist(subsector2,31001,31004,32001,32002,33001,33002,35001,35002,35003,35004)
 	collapse (sum) horas2, by(rbd sector2 subsector2)
+	
 	rename sector2 sector1
 	rename subsector2 subsector1
-	keep if inlist(subsector1,31001,31004,32001,32002,33001,33002,35001,35002,35003,35004)
+
 	tempfile ofta2
 	save `ofta2',replace 
 	restore
 	
+		* horas docentes idóneas
+	
 	preserve
+			keep if inlist(subsector2,31001,31004,32001,32002,33001,33002,35001,35002,35003,35004)
 	collapse (sum) horas2 if doc_ido2==1, by(rbd sector2 subsector2)
+	
 	rename sector2 sector1
 	rename subsector2 subsector1
 	rename horas2 hrs_ido2
-	keep if inlist(subsector1,31001,31004,32001,32002,33001,33002,35001,35002,35003,35004)
+
 	tempfile ofta2_ido
 	save `ofta2_ido',replace 
 	restore
@@ -184,14 +206,16 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*agregamos la cantidad de docentes según id_ifp e id_ifs
 	bys rbd: egen aux_ifp=count(mrun) if id_ifp==1
 		bys rbd: egen ifp=max(aux_ifp)
+		
 	bys rbd: egen aux_ifs=count(mrun) if id_ifs==1
 		bys rbd: egen ifs=max(aux_ifs)
+		recode ifs(.=0)
 	drop aux*
 	
 	bys rbd: keep if _n==1
 	keep rbd ifp ifs		
 		
-	*Hasta acá tenemos n rbd
+	*Hasta acá tenemos 2672 rbd
 	*Agregamos la información de la cantidad de horas para cada oferta por rbd
 	
 	merge 1:m rbd using `ofta1'
@@ -209,6 +233,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	merge 1:1 rbd sector1 subsector1 using `ofta2_ido'
 	drop _merge
 	codebook rbd
+	
 
 	********************************************************************************
 	* Mantenemos sectores nucleares
@@ -221,16 +246,18 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	bys rbd: egen doc_ifp=max(ifp)
 	bys rbd: egen doc_ifs=max(ifs)
 	
+	gen dotacion_docente=doc_ifp+doc_ifs
 	drop ifp ifs
 
 **# Horas totales y Horas Lectivas
 	*Horas disponibles del RBD
-	*solo horas1
+	/*solo horas1
 	gen hrs_aula1=horas1
 	gen hrs_lect1=hrs_aula1*4*0.65
 	
 	gen hrs_aula_ido1=hrs_ido1
 	gen hrs_lect_ido1=hrs_aula_ido1*4*0.65
+	*/
 	
 	*horas1 + horas2
 	gen hrs_aula2=horas1+horas2
@@ -248,36 +275,43 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	label define asignaturalbl 1 "Lenguaje" 2 "Matematica" 3 "Ciencias" 4 "Historia"
 	label values asignatura asignaturalbl
 	
-	collapse (sum) hrs_lect1 hrs_lect_ido1 hrs_lect2 hrs_lect_ido2 (first) doc_ifp doc_ifs, by(rbd asignatura)
+	drop if asignatura==.
 	
-	rename (hrs_lect1 hrs_lect2) (ofta_hrs1 ofta_hrs2)
-	rename (hrs_lect_ido1 hrs_lect_ido2) (ofta_hrs_ido1 ofta_hrs_ido2)
+	collapse (sum) hrs_lect2 hrs_lect_ido2 (first) doc_ifp doc_ifs dotacion_docente, by(rbd asignatura)
 	
-	
-	*Nota: Tenemos 2.672  rbd
+	rename ( hrs_lect2 hrs_lect_ido2) ( ofta_hrs2 ofta_hrs_ido2 )
+
+	*Nota: Tenemos 2.672  rbd -> pasa a 2.647 después de borrar los asignatura==.
 	*Generamos el cod_ense2 para hacer el match con la demanda de horas por nivel de cada RBD
 	gen cod_ense2=5
 	
-	drop if asignatura==.
+
 ****************************************************************************
 * Sobre el total de horas recuperadas
-	tempvar horas1_total
 	tempvar horas2_total
-	egen `horas1_total'=total(ofta_hrs1)
-	
-	levelsof `horas1_total'
-* horas totales 1707037.75 voriginal
-* Horas totales 1707037.75*
+
 	egen `horas2_total'=total(ofta_hrs2)
 	
 	levelsof `horas2_total'
 * horas totales 1828489 voriginal
 * Horas totales 1828489*
 
+
+
+	tempvar horas2_ido
+
+	egen `horas2_ido'=total(ofta_hrs_ido2) if asignatura==3
 	
+	levelsof `horas2_ido'
+* horas idoneas 1466358.375
+
+* Ciencias = 319628.40625
+
+	 bys asignatura: egen aux1=total(ofta_hrs_ido2)
+	 tab aux asignatura
 	
 ****************************************************************************
-
+*********** Agregando la demanda de horas *********** 
 	
 
 **# Merge demanda y oferta + info administrativa
@@ -290,8 +324,8 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	restore
 
 	merge m:1 rbd cod_ense2 using `dda', keepusing( n_cursos dda_hrs_*)
-	drop if _merge==1 //89 RBD con docentes pero sin matricula. y 150 RBD con matricula pero sin docente, ojo uqe solo consideramos urbanos
-	drop if _merge==2 //150 no hacen merge
+	drop if _merge==1 //83 RBD con docentes pero sin matricula. y 172 RBD con matricula pero sin docente, ojo uqe solo consideramos urbanos
+	drop if _merge==2 //172 no hacen merge
 	drop _merge
 	drop dda_hrs_basica
 	
@@ -302,24 +336,13 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 **# Cálculo del deficit
 		
-	*Deficit general e Idoneo - solo 1
-	local i=1
-	foreach var in leng mat cs hist{
-		gen def_`var'1=ofta_hrs1 - dda_hrs_`var' if asignatura==`i'
-			replace def_`var'1=def_`var'1/(30*0.65)
-		gen def_ido_`var'1=ofta_hrs_ido1 - dda_hrs_`var' if asignatura==`i'
-			replace def_ido_`var'1=def_ido_`var'1/(30*0.65)
-	local i=`i'+1
-	}
-
-	
 	*Deficit general e Idoneo - 1+2
 	local i=1
 	foreach var in leng mat cs hist{
-		gen def_`var'2=ofta_hrs2 - dda_hrs_`var' if asignatura==`i'
-					replace def_`var'2=(def_`var'2)/(30*0.65)
-		gen def_ido_`var'2=ofta_hrs_ido2- dda_hrs_`var' if asignatura==`i'
-					replace def_ido_`var'2=(def_ido_`var'2)/(30*0.65)
+		gen def_`var'2=round(ofta_hrs2 - dda_hrs_`var',2) if asignatura==`i'
+					replace def_`var'2=round((def_`var'2)/(30*0.65),2)
+		gen def_ido_`var'2=round(ofta_hrs_ido2- dda_hrs_`var',2) if asignatura==`i'
+					replace def_ido_`var'2=round((def_ido_`var'2)/(30*0.65),2)
 	local i=`i'+1
 	}
 
@@ -355,14 +378,14 @@ foreach var in leng mat cs hist{
 	xtitle("Diferencia docentes estimada") ///
 	ytitle("Densidad") ///
 	graphregion(c(white))
-	graph export "$output\230505_def_doc_`var'_2022_distr.png", replace
+	graph export "$output\230526_def_doc_`var'_2022_distr.png", replace
 	local j = `j' +1
 	}
 	
 	/* Gráfico Antiguo
 	foreach var in hist    {
 	graph box def_`var'2  def_ido_`var'2, title("Densidad de la dif. estimada de docente en Historia") legend(label(1 "superávit/déficit Total") label(2 "superávit/déficit idóneo")) graphregion(c(white)) nooutsides
-	graph export "$output\230505_def_doc_`var'_2022__boxplot.png",replace
+	*graph export "$output\230505_def_doc_`var'_2022__boxplot.png",replace
 	}
 	*/
 	
@@ -400,13 +423,6 @@ foreach var in leng mat cs hist{
 **# Cálculo del Deficit
 	local i=1
 	foreach var in leng mat cs hist{
-	*horas 1
-	gen d_def_`var'1=1 if def_`var'1<0 & asignatura==`i'
-		replace d_def_`var'1=0 if def_`var'1>=0 & asignatura==`i'
-	
-	gen d_def_ido_`var'1=1 if def_ido_`var'1<0 & asignatura==`i'
-		replace d_def_ido_`var'1=0 if def_ido_`var'1>=0 & asignatura==`i'
-		
 	*horas 1+2
 	gen d_def_`var'2=1 if def_`var'2<0 & asignatura==`i'
 		replace d_def_`var'2=0 if def_`var'2>=0 & asignatura==`i'
@@ -416,7 +432,7 @@ foreach var in leng mat cs hist{
 	local i=`i'+1
 	}
 
-	*save "230523_ofta_dda_media_2022.dta",replace
+	save "230526_ofta_dda_media_2022.dta",replace
 	tempfile simulacion_media
 	save `simulacion_media'
 	
@@ -426,32 +442,10 @@ foreach var in leng mat cs hist{
 	*use "ofta_dda_media_2022",clear
 	use `simulacion_media',clear
 	
-/* REVISAR ESTA SECCION DEL CODIGO
-*suma de docentes faltantes
-	forv i=1(1)4{
-		preserve
-			collapse (sum) def if asignatura==`i', by(cod_reg_rbd)
-		restore
-	}
-	
-	collapse (mean) d_def*, by(cod_reg_rbd)
 
+	**# % de EE con deficit, no exporta
 	
-*suma de docentes idoneos faltantes
-	use "ofta_dda_media_2022",clear
-
-	
-		forv i=1(1)4{
-			preserve
-				keep if asignatura==`i'
-				collapse (sum) def_*, by(cod_reg_rbd)
-				export excel using "$output\230123_n_def_doc_media_reg_2022", sheet(`i',modify) firstrow(var)
-			restore
-		}
-	*/		
-		
 *Promedio de deficit por región
-	*use "ofta_dda_media_2022",clear
 	
 		*Podemos generar la tabla acá
 	foreach var in leng mat cs hist {
@@ -459,7 +453,7 @@ foreach var in leng mat cs hist{
 		tabstat d_def_`var'2 d_def_ido_`var'2, by(cod_reg_rbd) s(mean)
 	}
 	
-	tabstat $listado , by(cod_reg_rbd) s(mean) f( %9.2f)
+	
 	
 	**#% de establecimientos con déficit por región y asignatura	
 local i=2
@@ -468,56 +462,25 @@ local i=2
 	display "`letter'"
 		preserve
 	collapse (mean) d_def_`var'2 d_def_ido_`var'2 , by(cod_reg_rbd)
-	export excel using "$output\230519_n_doc_media_reg_2022_v38s", sheet(EE_def,modify) firstrow(var) cell("`letter'2")
+	export excel using "$output\230526_n_doc_media_reg_2022_v38s.xlsx", sheet(EE_def,modify) firstrow(var) cell("`letter'2")
 	restore
 	local i=`i'+5
 	}
 	
 	
-
-**# Total de docentes que faltan por región y asignatura
-/* CODIGO ANTIGUO 
-	*1-NO NETEO! Regional
-	foreach var in leng mat cs hist {
-	preserve	
 	
-	collapse (sum) def_`var'2  if d_def_`var'2==1 , by(cod_reg_rbd)
-	export excel using "$output\230505_n_doc_media_reg_22_`var'", sheet(media,modify) firstrow(var) cell(A2)
-	restore 
-
-	preserve	
-	
-	collapse (sum) def_ido_`var'2 if d_def_ido_`var'2==1 , by(cod_reg_rbd)
-	export excel using "$output\230505_n_doc_media_reg_22_`var'", sheet(media,modify) firstrow(var) cell(E2)
-				
-	restore 
-	
-	*2 - Neteo Regional
-	preserve
-	
-	collapse (sum) def_`var'2  , by(cod_reg_rbd)
-	export excel using "$output\230505_n_doc_media_reg_22_`var'", sheet(media_neto,modify) firstrow(var) cell(A2)
-				
-	restore 
-
-	preserve	
-	collapse (sum) def_ido_`var'2  , by(cod_reg_rbd)
-				export excel using "$output\230505_n_doc_media_reg_22_`var'", sheet(media_neto,modify) firstrow(var) cell(E2)
-	restore 
-	*/
-
 ******Total de docentes que faltan por comuna,región y asignatura
 
 	*1-NO NETEO! Comunal
 	foreach var in leng mat cs hist {
 	preserve	
 	collapse (sum) def_`var'2 (first) cod_reg_rbd if d_def_`var'2==1 , by(cod_com_rbd)
-				export excel using "$output\230519_n_doc_media_reg_22_`var'_38s", sheet(media_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230526_n_doc_media_reg_22_`var'_38s.xlsx", sheet(media_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd if d_def_ido_`var'2==1 , by(cod_com_rbd)
-				export excel using "$output\230519_n_doc_media_reg_22_`var'_38s", sheet(media_com,modify) firstrow(var) cell(F2)
+				export excel using "$output\230526_n_doc_media_reg_22_`var'_38s.xlsx", sheet(media_com,modify) firstrow(var) cell(F2)
 	
 	restore 
 }	
@@ -527,7 +490,7 @@ local i=2
 	
 **# Analisis - Dependencia
 
-	use "230523_ofta_dda_media_2022",clear
+	*use "230526_ofta_dda_media_2022",clear
 	
 	
 	*Definición de Dependencia
@@ -547,17 +510,18 @@ local i=2
 	}
 	
 		foreach var in leng mat cs hist {
-	 tabstat d_def_`var'2 d_def_ido_`var'2 , by(cod_reg_rbd) s(mean n)
+	 tabstat d_def_`var'2 d_def_ido_`var'2 , by(cod_reg_rbd) s(mean)
 	}
 	
-	local i=1
-	foreach var in leng mat cs hist {
+	/*para exportar los resultados
+	eststo X : qui estpost tabstat x1 x2 x3 x4 , by(country) stats(mean) 
+esttab X using summary.csv , cells("x1 x2 x3 x4") plain nomtitle nonumber noobs 
+*/
+
+	bys rbd: gen id=_n	
+	bys rbd: egen asignacion=max(id)
 	
-	bys rbd: egen aux`i'=max(d_def_`var'2)
-	local i=`i'+1
-		}
-	egen aux_asignacion=rowmiss(aux1 aux2 aux3 aux4)
-	
+	tab asignacion if id==1
 	**# Dependencia - Lenguaje
 
 	**# Tablas
@@ -567,13 +531,13 @@ local i=2
 	preserve	
 	collapse (sum) def_`var'2 (first) cod_reg_rbd if d_def_`var'2==1 , by(cod_com_rbd depe)
 	sort depe cod_com_rbd
-	export excel using "$output\230519_def_media_depe", sheet("depe_`var'",modify) firstrow(var) cell(B2)
+	export excel using "$output\230526_def_media_depe.xlsx", sheet("depe_`var'",modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido_`var'2 (first) cod_reg_rbd if d_def_ido_`var'2==1 , by(cod_com_rbd depe)
 	sort depe cod_com_rbd
-	export excel using "$output\230519_def_media_depe", sheet("depe_`var'",modify) firstrow(var) cell(F2)
+	export excel using "$output\230526_def_media_depe.xlsx", sheet("depe_`var'",modify) firstrow(var) cell(F2)
 	restore 
 	}
 	
