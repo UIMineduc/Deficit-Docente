@@ -1,34 +1,47 @@
 *Autor: Alonso Arraño
-*Fecha ultima modificacion: 29-05-23
+*Fecha ultima modificacion: 20-07-23
+*Se añaden comentarios a cada seccion para hacer mas facil el traspaso de informacion a Mario o la persona nueva.
+
 *Nota: Este es quizás el proyecto más importante que hice en el CEM, tratenlo con cariño
-* Hay un montón de horas y reuniones detrás de este cálculo.
+*Hay un montón de horas y reuniones detrás de este cálculo.
 
-
-*** Listado de RBD que no reportan docentes en enseñanza básica
-
+**# Configuracion
 clear all
-*Directorio AAP
 
+*Directorio AAP
+*Proyecto
 cd "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\Data"
 
+/* Estructura proyecto
+
+-0 0 Bases MINEDUC
+	- Docentes 
+		- 2022
+	- Matriculas
+		- 2022
+	- Directorio
+		- 2022
+*/
+
+*Carpetas con las bbdd
 global docentes "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Docentes\Cargos Docentes"
 global matricula22 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2022"
 global directorio "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Directorios"
 global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output\v4"
 
 
-
-*3- Determinar cuántos docentes titulados por materia seleccionada ejercen como función principal la docencia de aula en cada rbd.
-
-**#Load Data
+**#Load Data - Docentes
 	
+	// ESTO ES SOLO SI NO SE TIENE LA BASE EN DTA
 	*import delimited "$docentes\Docentes_2022_PUBLICA.csv", varnames(1) encoding(UTF-8) clear 
 	*save "$docentes\docentes_2022_publica.dta",replace
 	
 	use "$docentes\docentes_2022_publica.dta" ,clear
 	
+	*Filtramos EE en funcionamiento
 	keep if estado_estab==1
 	
+	*dropeamos variables que no se ocupan
 	drop estado_estab persona
 	
 	*Variables de Interés 
@@ -46,7 +59,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		* Destring de variables 
 		quietly destring, dpcomma replace
 		
-	*Mantenemos a quienes ejercen como docente de aula, de forma primaria y a los que hacen clases en basica/media
+	*Mantenemos a quienes ejercen como docente de aula, de forma primaria y a los que hacen clases en basica
 	*Este se considera el universo de docentes
 		keep if inlist(1,id_ifp,id_ifs)
 		keep if inlist(110,cod_ens_1,cod_ens_2)
@@ -70,10 +83,15 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*La primera condicion (0) son docentes que hacen clases en el nivel de básica en alguna de estas asignaturas
 	*La segunda condicion (1) son docentes que hacen clases y que además tienen la titulación según la ley n°....
 	
-	* condicion de titulacion
+	*condicion de titulacion
 	gen titulo_pedagogia= 1 if (inlist(tip_tit_id_1,13,15,16) | inlist(tip_tit_id_2,13,15,16))
 	
 	* condicion de asignaturas (lenguaje, matemáticas, ciencias, historia & general)
+	/* Explicacion:
+	Genero una variable ido_bas1 o ido_bas2 según el subsector1 o 2 en que hace clases
+	luego le asigno el 0 a todos aquellos que declaran hacer clases en alguna de las asignaturas de Ens. Basica explicadas arriba
+	Asigno 1 a los IDONEOS, que cumplen la condicion de hacer clases en el nivel & tienen la pedagogia en basica
+	*/
 	forv i=1/2{
 	gen ido_bas`i'= 0 if inlist(subsector`i',11001,11004,12001,12002,13001,13002,13003,13004,19001) 
 		replace ido_bas`i'=1 if titulo_pedagogia==1  & inlist(subsector`i',11001,11004,12001,12002,13001,13002,13003,13004,19001)
@@ -136,7 +154,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 
 	********************************************************************************
 **# Oferta de horas por RBD y Asignatura
-	* Horas totales del establecimiento*
+	* Horas totales del establecimiento por cada subsector1 o subsector2*
 	*Por subsector1
 	preserve
 	keep if inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001)
@@ -215,7 +233,13 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 **# Horas totales y Horas Lectivas
 	*Horas disponibles del RBD
 	
+	
+	///// SUPUESTO! las horas aula consideran lectivas + no lectivas, por lo que
+	//// se utiliza el 65% de ellas como horas lectivas cronológicas mensuales
+	
+	
 	*Acá tenemos el total de horas aula 
+	
 	gen hrs_aula2=horas1+horas2
 	gen hrs_lect2=hrs_aula2*4*0.65
 	
@@ -229,6 +253,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*El sufijo 2 hace referencia al total de horas
 	*el codebook arroja 4.862 establecimientos
 	
+	// Nivel basica para hacer el match con la demanda de horas
 	gen cod_ense2=2
 
 ****************************************************************************
@@ -236,6 +261,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 
 **# Merge Oferta y Demanda de EE
 
+// Nota: La creacion de las horas demandadas esta en la carpeta.
 	preserve
 	use "dda_hrs_rbd_nivel_2022_38sem.dta",clear
 	keep if cod_ense2==2
@@ -248,6 +274,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	rename _merge merge_dda
 	*drop if _merge==1 //49 RBD con docentes pero sin matricula en el nivel. 
 	*drop if _merge==2 //28 RBD con cursos pero sin docentes principales
+	*Lo anterior es anomalo, y es una de limitaciones del modelo que existen establecimientos con discrepancias entre las clases y docentes
 	
 	*agregamos data administrativa
 	merge 1:1 rbd using "$directorio\directorio_2022",  keepusing(cod_reg_rbd cod_com_rbd cod_depe2) keep(3)
@@ -261,7 +288,16 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 
 **# Cálculo del Deficit
 	**# De horas a Docentes
-		
+	
+	/// Nota: El deficit se entiende como la diferencia entre horas disponibles y
+	/// horas demandadas
+	
+	* La transformacion de horas a n de docentes se basa en la mediana/promedio
+	* de horas aula totales de los docentes, lo que se presenta en las figuras de
+	* caracterizacion de horas aula de la seccion superior.
+	
+	*Dado que un docente hace 30 horas semanales y el 65% de estas son lectivas
+	
 	*1 + 2
 	gen def_total2=ofta_hrs2-dda_hrs_basica
 	replace def_total2=def_total2/(30*0.65)
@@ -270,6 +306,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		replace def_ido2=def_ido2/(30*0.65)
 		
 	**# establecimiento en situacion de deficit
+	* Esta es una de las innovaciones que hicimos para el calculo del deficit
+	* a nivel de establecimientos a diferencia de elige educar
+	* Esta diferencia implica que tenemos SIEMPRE un n mas alto de deficit
+	
 	*horas 1+2
 	gen d_def_tot2=1 if def_total2<0
 		replace d_def_tot2=0 if def_total2>=0
@@ -278,13 +318,13 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		replace d_def_ido2=0 if def_ido2>=0
 	
 	* Redondeo del deficit segun situacion
+	* Redondeamos debido a que no podemos tener de deficit 1,5 profes para un establecimiento
 	
 	replace def_total2=ceil(def_total2) if d_def_tot2==0
 	replace def_total2=floor(def_total2) if d_def_tot2==1
 	
 	replace def_ido2=ceil(def_ido2) if d_def_ido2==0
 	replace def_ido2=floor(def_ido2) if d_def_ido2==1
-
 
 	save "230530_ofta_dda_basica_2022_38sem_doc_idoneo.dta",replace
 
@@ -295,12 +335,12 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 **# Base Final
 
-	*use "ofta_dda_basica_2022",clear
+	*use "230530_ofta_dda_basica_2022_38sem_doc_idoneo",clear
 	use `simulacion',clear
 	
 	**# Graficos Horas1 y Horas totales
 	**********
-	** NOTA: LA MAYORIA DE LAS HORAS SE ENCUENTRAN EN HORAS 1
+	** NOTA: LA MAYORIA DE LAS HORAS SE ENCUENTRAN EN HORAS 1 pero igual se considera horas 1 + horas 2 porque pequeñas horas hacen grandes diferencias
 	
 	
 	/* Gráficos considerando horas1 y horas 1+2
@@ -357,10 +397,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 
 /* DESCRIPCION TABLAS
 
-Basica_neto_com: Se debe generar una dummy si el valor es negativo o no, asi luego se sumaran todos los valores negativos para cada región, Considerando reasignación docente dentro de la comuna de la región	
-
+sumamos a nivel de comuna la cantidad de docentes faltantes para los casos totales, docentes e idoneos 
 
 */
+
 	
 	*1-NO NETEO! Comunal
 	preserve	
