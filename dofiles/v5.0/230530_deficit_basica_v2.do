@@ -27,7 +27,7 @@ cd "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\Data"
 global docentes "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Docentes\Cargos Docentes"
 global matricula22 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2022"
 global directorio "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Directorios"
-global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output\v5"
+global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output\v4"
 
 
 **#Load Data - Docentes
@@ -36,15 +36,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*import delimited "$docentes\Docentes_2022_PUBLICA.csv", varnames(1) encoding(UTF-8) clear 
 	*save "$docentes\docentes_2022_publica.dta",replace
 	
-	// Version publica
-	*use "$docentes\docentes_2022_publica.dta" ,clear
-	
-	// Version privada -> solo para obtener informacion de los autorizados
-	use "$docentes\docentes_2022_privada.dta" ,clear
-	
-	// Informar que base estas usando
-	gen base = "privada" // privada o publica
-	display "Estas usando la base de docentes en su versión $base"
+	use "$docentes\docentes_2022_publica.dta" ,clear
 	
 	*Filtramos EE en funcionamiento
 	keep if estado_estab==1
@@ -53,17 +45,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	drop estado_estab persona
 	
 	*Variables de Interés 
-	if base =="publica" {
-		keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 tip_tit_id_2 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1 esp_id_2 id_itc tip_insti_id_1 tip_insti_id_2 grado*_1 grado*_2 autorizacion_docente
-		
-			order cod_reg_rbd cod_com_rbd cod_depe2 rural_rbd rbd mrun
-	}
-	else  if base =="privada" {
-		keep doc_run rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 tip_tit_id_2 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1 esp_id_2 id_itc tip_insti_id_1 tip_insti_id_2 grado*_1 grado*_2 autorizacion_docente
-		
-			order cod_reg_rbd cod_com_rbd cod_depe2 rural_rbd rbd doc_run
-	}
-
+	keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 tip_tit_id_2 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1 esp_id_2 id_itc tip_insti_id_1 tip_insti_id_2 grado*_1 grado*_2
+	
+	order  cod_reg_rbd cod_com_rbd cod_depe2 rural_rbd rbd mrun
+	
 **# Análisis
 		* Mantenemos solo RBD urbanos
 		keep if rural_rbd==0
@@ -77,38 +62,79 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*Mantenemos a quienes ejercen como docente de aula, de forma primaria y a los que hacen clases en basica
 	*Este se considera el universo de docentes
 		keep if inlist(1,id_ifp,id_ifs)
-		keep if inlist(110,cod_ens_1,cod_ens_2) // | inlist(310,cod_ens_1,cod_ens_2) esta sección la trasladaremos a otro codigo
+		keep if inlist(110,cod_ens_1,cod_ens_2)
 
+	codebook mrun rbd
 
-	capture noisily codebook   mrun rbd
-	capture noisily codebook   rbd doc_run
-	*Tenemos un total de 114.483 docentes como universo final de basica usando ifp + ifs
-	* Con un total de 112.225 únicos
-	*considerando un total de 4,873 RBD como universo usando ifp + ifs
 	
-	****************************************************************************
-	*************************** Criterios de Idoneidad *************************
-	
-**# Idoneidad Docente 
+**# Generar variables para idoneidad
 
-	*Versión 2
-	**# Ed Básica
-	// Condiciones para considerar 
-	*La primera condicion (0) son docentes que hacen clases en el nivel de básica en alguna de estas asignaturas
-	*La segunda condicion (1) son docentes que hacen clases y que además tienen la titulación según la ley n°....
-	
 	*condicion de titulacion
 	gen titulo_pedagogia= 1 if (inlist(tip_tit_id_1,13,15,16) | inlist(tip_tit_id_2,13,15,16))
 	gen titulo_media=1 if tip_tit_id_1==14|tip_tit_id_2==14
 	
+	
+**# Cambio formato base
+	****************************************************************************
+		*************************** Wide to Long *************************
+		
+forv i=1/1{
+preserve
+
+ keep mrun rbd cod_ens_`i' sector`i' subsector`i' horas`i' nivel`i' cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd tip_tit_id_`i' esp_id_`i' tip_insti_id_`i' grado*_`i' titulo_pedagogia titulo_media
+
+ tempfile base`i'
+ save `base`i''
+restore
+} 
+
+forv i=2/2{
+	preserve
+
+ keep mrun rbd cod_ens_`i' sector`i' subsector`i' horas`i' nivel`i' cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd tip_tit_id_`i' esp_id_`i' tip_insti_id_`i' grado*_`i' titulo_pedagogia titulo_media
+ 
+ rename (cod_ens_`i' sector`i' subsector`i' horas`i' nivel`i' cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd tip_tit_id_`i' esp_id_`i' tip_insti_id_`i' grado*_`i') (cod_ens_1 sector1 subsector1 horas1  nivel1 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd tip_tit_id_1 esp_id_1 tip_insti_id_1 grado*_1)
+ 
+ 
+ tempfile base`i'
+ save `base`i''
+restore
+}
+
+	
+
+use `base1',clear
+append using `base2'
+	
+	
+
+	****************************************************************************
+	*************************** Criterios de Idoneidad *************************
+	
+**# Idoneidad Docente
+	* Ed basica
+	*gen ido_bas=0 if inlist(2,nivel1,nivel2) & inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001)
+	*replace ido_bas=1 if inlist(13,tip_tit_id_1,tip_tit_id_2) & inlist(2,nivel1,nivel2) & inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001)
+	 
+	*Versión 2
+	* Ed Básica
+	*La primera condicion (0) son docentes que hacen clases en el nivel de básica en alguna de estas asignaturas
+	*La segunda condicion (1) son docentes que hacen clases y que además tienen la titulación según la ley n°....
+	
+
 	*Condicion de hacer clases en 5to a 8vo basico
-	forv j=1/2{
+
 	forv i=5/8{
-		gen clases_`i'_`j'=1 if cod_ens_`j'==110 & inlist(`i',grado1_`j',grado2_`j',grado3_`j',grado4_`j', grado5_`j', grado6_`j', grado7_`j', grado8_`j', grado9_`j', grado10_`j', grado11_`j', grado12_`j')
+		gen clases_`i'=1 if cod_ens_1==110 & inlist(`i',grado1_1,grado2_1,grado3_1,grado4_1, grado5_1, grado6_1, grado7_1, grado8_1, grado9_1, grado10_1, grado11_1, grado12_1)
 	}
-	gen d_clases_5_8_`j'=1 if inlist(1,clases_5_`j', clases_6_`j', clases_7_`j', clases_8_`j')
-	}
+	gen d_clases_5_8=1 if inlist(1,clases_5, clases_6, clases_7, clases_8)
+
 	drop clases_*
+	
+	**///////// Eliminamos los niveles que no sean basica
+	keep if cod_ens_1==110
+
+	
 	* condicion de asignaturas (lenguaje, matemáticas, ciencias, historia & general)
 	/* Explicacion:
 	Genero una variable ido_bas1 o ido_bas2 según el subsector1 o 2 en que hace clases
@@ -116,36 +142,28 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	Asigno 1 a los IDONEOS, que cumplen la condicion de hacer clases en el nivel & tienen la pedagogia en basica
 	*/
 
-	forv i=1/2{
-	gen ido_bas`i'= 0 if inlist(subsector`i',11001,11004,12001,12002,13001,13002,13003,13004,19001) 
-		replace ido_bas`i'=1 if titulo_pedagogia==1  & inlist(subsector`i',11001,11004,12001,12002,13001,13002,13003,13004,19001)
-		replace ido_bas`i'=1 if titulo_media==1 & d_clases_5_8_`i'==1 & inlist(subsector`i',11001,11004,12001,12002,13001,13002,13003,13004,19001) 
-	}
-	
-	egen tasa_idoneidad=rowmax(ido_bas1 ido_bas2)
+
+	gen ido_bas1= 0 if inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001) // Todos los que hacen clases en estas asignaturas
+		replace ido_bas1=1 if titulo_pedagogia==1  & inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001)
+		replace ido_bas1=1 if titulo_media==1 & d_clases_5_8==1 & inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001) 
+
 		
 	**# Tasa de Idoneidad
 	** Descrición por sector **
 	 *tab ido_bas // proporción de idoneos es el 64%
-	 tab ido_bas1 // proporción de idoneos es el 69% aumentó a 78,8%
-	 tab ido_bas2 // proporción de idoneos es el 34% aumentó a 80,5% Este aumento es bastante grande
-	 tab tasa_idoneidad // proporción de idoneos es el 63,65% aumentó a 79,8%
-	 tabstat tasa_idoneidad , by(cod_reg_rbd) save f( %9.4f)
-	 
-	 
-	 * Vemos como se comportan los docentes autorizados
-	 tab tasa_idoneidad autorizacion_docente
+	 tab ido_bas1 // proporción de idoneos es el 69% aumentó a 79,2%
+	 tabstat ido_bas1 , by(cod_reg_rbd) save f( %9.4f)
 	 
 **# Estadística descriptiva Cargo Docente
 	*tasa de idoneidad docente en básica
-	tabstat tasa_idoneidad, by(cod_depe2)
+	tabstat ido_bas1, by(cod_depe2)
 	
 	*Distribución horas_aula 
 	*opcion 1*
-	summarize horas_aula,d 
+	summarize horas1,d 
 	local mediana= `r(p50)'
 	
-	kdensity horas_aula, lcolor("15 105 180"*0.8) ///
+	kdensity horas1, lcolor("15 105 180"*0.8) ///
 	xline(`mediana',lcolor("235 60 70"*0.8))  ///
 	graphregion(c(white)) ///
 	title("Distribución horas de aula, Ed. básica",color(black) margin(medium)) ///
@@ -155,9 +173,6 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	*opcion 2
 	*Me gusta más la opcion 2
-	*Para llegar a las 30 horas aula es necesario utilizar los docentes de basica y mediana
-	*Además , para los mrun duplicados, dejamos la observacion con la mayor cantidad de horas aula
-	****** NOTA!!!!: Hay docentes duplicados que suman más de 44 horas aula cuando se suma el rbd_i y el rbd_j
 	summarize horas_aula,d 
 	local mediana= `r(p50)'
 	
@@ -359,7 +374,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	replace def_ido2=ceil(def_ido2) if d_def_ido2==0
 	replace def_ido2=floor(def_ido2) if d_def_ido2==1
 
-	save "230811_ofta_dda_basica_2022_38sem_doc_idoneo.dta",replace
+	save "230530_ofta_dda_basica_2022_38sem_doc_idoneo.dta",replace
 
 	*save "ofta_dda_basica_2022",replace
 	tempfile simulacion
@@ -368,7 +383,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 **# Base Final
 
-	*use "230811_ofta_dda_basica_2022_38sem_doc_idoneo",clear
+	*use "230530_ofta_dda_basica_2022_38sem_doc_idoneo",clear
 	use `simulacion',clear
 	
 	**# Graficos Horas1 y Horas totales
@@ -394,7 +409,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	xtitle("Diferencia docentes estimada") ytitle("Densidad") ///
 	graphregion(c(white))
 	
-	graph export "$output\230811_def_basica_2022_38sem.png",replace
+	graph export "$output\230530_def_basica_2022_38sem.png",replace
 
 	**# Graficos - Horas totales - BOXPLOT
 	graph box def_total2 def_ido2, ///
@@ -408,7 +423,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	note("Nota: Se excluyen los valores externos") ///
 	yline(0, lpattern(solid) lcolor(black*0.6))
 	
-	graph export "$output\230811_boxplot_def_basica_2022_38sem.png",replace
+	graph export "$output\230530_boxplot_def_basica_2022_38sem.png",replace
 	
 
 	
@@ -438,12 +453,12 @@ sumamos a nivel de comuna la cantidad de docentes faltantes para los casos total
 	*1-NO NETEO! Comunal
 	preserve	
 	collapse (sum) def_total2 (first) cod_reg_rbd if d_def_tot2==1 , by(cod_com_rbd)
-				export excel using "$output\230811_n_def_doc_38sem_2022_doc_idoneo.xlsx", sheet(basica_com,modify) firstrow(var) cell(B2)
+				export excel using "$output\230530_n_def_doc_38sem_2022_doc_idoneo.xlsx", sheet(basica_com,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 (first) cod_reg_rbd if d_def_ido2==1 , by(cod_com_rbd)
-				export excel using "$output\230811_n_def_doc_38sem_2022_doc_idoneo.xlsx", sheet(basica_com,modify) firstrow(var) cell(F2)
+				export excel using "$output\230530_n_def_doc_38sem_2022_doc_idoneo.xlsx", sheet(basica_com,modify) firstrow(var) cell(F2)
 	restore 
 
 **# Analisis por Dependencia
@@ -466,13 +481,13 @@ sumamos a nivel de comuna la cantidad de docentes faltantes para los casos total
 	preserve	
 	collapse (sum) def_total2 (first) cod_reg_rbd if d_def_tot2==1 , by(cod_com_rbd depe)
 	sort depe cod_com_rbd
-	export excel using "$output\230811_n_def_doc_38sem_2022_doc_idoneo.xlsx", sheet(depe_basica,modify) firstrow(var) cell(B2)
+	export excel using "$output\230530_n_def_doc_38sem_2022_doc_idoneo.xlsx", sheet(depe_basica,modify) firstrow(var) cell(B2)
 	restore 
 
 	preserve	
 	collapse (sum) def_ido2 (first) cod_reg_rbd if d_def_ido2==1 , by(cod_com_rbd depe)
 	sort depe cod_com_rbd
-	export excel using "$output\230811_n_def_doc_38sem_2022_doc_idoneo.xlsx", sheet(depe_basica,modify) firstrow(var) cell(F2)
+	export excel using "$output\230530_n_def_doc_38sem_2022_doc_idoneo.xlsx", sheet(depe_basica,modify) firstrow(var) cell(F2)
 	restore 
 	
 
