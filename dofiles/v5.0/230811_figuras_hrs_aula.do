@@ -7,7 +7,7 @@
 
 **# Configuracion
 clear all
-
+graph set window fontface "Calibri light" // Dejamos calibri light como formato predeterminado 
 *Directorio AAP
 *Proyecto
 cd "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\Data"
@@ -114,10 +114,14 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	kdensity horas_aula, lcolor("15 105 180"*0.8) ///
 	xline(`mediana',lcolor("235 60 70"*0.8))  ///
 	graphregion(c(white)) ///
-	title("Distribución horas de aula, Ed. básica",color(black) margin(medium)) ///
 	xtitle("Horas de aula") ///
 	ytitle("Densidad") ///
-	note("Notas:Horas cronológicas")
+	xlabel(0(4)44)
+	
+	**Formato CEM
+	*title("Distribución horas de aula, Ed. básica",color(black) margin(medium)) ///
+	*note("Nota: Se presentanHoras cronológicas") ///
+	
 	
 	*opcion 2
 	*Me gusta más la opcion 2
@@ -134,11 +138,14 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	lwidth(thin) ///
 	fin(inten60) ///
 	graphregion(c(white)) ///
-	title("Distribución horas de aula en básica y media", color(black) margin(medium)) ///
-	xtitle("Horas de aula") ///
+	xtitle("Horas de aula",margin(small)) ///
 	ytitle("Densidad") ///
 	xlabel(0 5 10 15 20 25 30 35 40 44) ///
-	note("Nota:Horas cronológicas" "Nota 2: La línea roja representa el 50% de la distribución")
+	note("Nota: Horas cronológicas" "Nota 2: La línea roja representa el 50% de la distribución")
+	
+	graph export "${output}\distribucion_horas_aula.png" , replace
+	*	title("Distribución horas de aula en básica y media", color(black) margin(medium)) ///
+	
 	**# Caracterizacion Docentes Basica
 	
 	graph box horas_aula, nooutsides

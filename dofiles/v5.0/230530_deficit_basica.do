@@ -7,6 +7,7 @@
 
 **# Configuracion
 clear all
+graph set window fontface "Calibri light" // Dejamos calibri light como formato predeterminado 
 
 *Directorio AAP
 *Proyecto
@@ -37,13 +38,13 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*save "$docentes\docentes_2022_publica.dta",replace
 	
 	// Version publica
-	*use "$docentes\docentes_2022_publica.dta" ,clear
+	use "$docentes\docentes_2022_publica.dta" ,clear
 	
 	// Version privada -> solo para obtener informacion de los autorizados
-	use "$docentes\docentes_2022_privada.dta" ,clear
+	*use "$docentes\docentes_2022_privada.dta" ,clear
 	
 	// Informar que base estas usando
-	gen base = "privada" // privada o publica
+	gen base = "pública" // privada o publica
 	display "Estas usando la base de docentes en su versión $base"
 	
 	*Filtramos EE en funcionamiento
@@ -64,7 +65,12 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 			order cod_reg_rbd cod_com_rbd cod_depe2 rural_rbd rbd doc_run
 	}
 
-**# Análisis
+	
+	****************************************************************************
+	*************************** Filtros base docentes **************************
+	
+**# Filtro: Establecimientos y Docentes
+
 		* Mantenemos solo RBD urbanos
 		keep if rural_rbd==0
 		
@@ -115,7 +121,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	luego le asigno el 0 a todos aquellos que declaran hacer clases en alguna de las asignaturas de Ens. Basica explicadas arriba
 	Asigno 1 a los IDONEOS, que cumplen la condicion de hacer clases en el nivel & tienen la pedagogia en basica
 	*/
-
+	
+	global listado1 inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001) 
+	global listado2 inlist(subsector2,11001,11004,12001,12002,13001,13002,13003,13004,19001) 
+	
 	forv i=1/2{
 	gen ido_bas`i'= 0 if inlist(subsector`i',11001,11004,12001,12002,13001,13002,13003,13004,19001) 
 		replace ido_bas`i'=1 if titulo_pedagogia==1  & inlist(subsector`i',11001,11004,12001,12002,13001,13002,13003,13004,19001)
@@ -123,7 +132,9 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	}
 	
 	egen tasa_idoneidad=rowmax(ido_bas1 ido_bas2)
-		
+	
+	
+	
 	**# Tasa de Idoneidad
 	** Descrición por sector **
 	 *tab ido_bas // proporción de idoneos es el 64%
@@ -134,9 +145,29 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 
 	 
 	 * Vemos como se comportan los docentes autorizados
-	 tab tasa_idoneidad autorizacion_docente
+	 capture noisily tab tasa_idoneidad autorizacion_docente
+	 
+	****************************************************************************
+	*************************** Docentes Habilitados ***************************
+	 
+	 ****** NOTA: Esta seccion solo debe correrse para estadistica descriptiva
+**# Docentes Habilitados
+	forv i=1/2{
+	if `i'==1 {
+	g doc_habilitado`i'=0 if $listado1 ==1 
+		replace doc_habilitado`i'=2 if ido_bas`i'==0
+	}
+	else {
+		g doc_habilitado`i'=0 if $listado2 ==1 
+		replace doc_habilitado`i'=2 if ido_bas`i'==0
+	}
+	}
+
+	egen tasa_habilitado=rowmax(doc_habilitado1 doc_habilitado2)
+
 	 
 **# Estadística descriptiva Cargo Docente
+{ //Esta seccion se traslado a 23081_figuras_hrs_aula
 	*tasa de idoneidad docente en básica
 	tabstat tasa_idoneidad, by(cod_depe2)
 	
@@ -170,7 +201,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	ytitle("Densidad") ///
 	xlabel(0 5 10 15 20 25 30 35 40 44) ///
 	note("Notas:Horas cronológicas")
-	
+
 	**# Caracterizacion Docentes Basica
 	
 	graph box horas_aula, nooutsides
@@ -184,6 +215,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	tab cod_depe2
 	tab sector1
 	tab id_ifs
+}
 
 	********************************************************************************
 **# Oferta de horas por RBD y Asignatura
@@ -205,6 +237,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	tempfile ofta1_ido
 	save `ofta1_ido',replace 
 	restore
+
 	
 	*Por subsector2
 	preserve
@@ -318,6 +351,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	drop merge_dda
 	
 	*Nos quedamos con 4.820 EE completos
+	** Actualizacion nos quedamos con 4813 debido a la nueva condicion de docentes idoneos
 
 **# Cálculo del Deficit
 	**# De horas a Docentes
@@ -330,6 +364,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	* caracterizacion de horas aula de la seccion superior.
 	
 	*Dado que un docente hace 30 horas semanales y el 65% de estas son lectivas
+	* Se divide por la multiplicación (30*0,65)
 	
 	*1 + 2
 	gen def_total2=ofta_hrs2-dda_hrs_basica
@@ -390,7 +425,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	twoway kdensity def_total2  , lp(solid) lcolor("15 105 180"*0.8) lw(medthick)  || ///
 	kdensity def_ido2 , lp(dash) lw(medthick) lcolor("235 60 70"*0.8) ///
 	title("Densidad dif. estimada de docentes en Ens. Básica",color(black) margin(medium) ) ///
-	legend(label(1 "Docentes Totales") label(2 "Docentes Idóneos") region(fcolor(none) lcolor(none))) ///
+	legend(label(1 "Docentes Idoneos") label(2 "Docentes Idóneos disciplinar") region(fcolor(none) lcolor(none))) ///
 	xtitle("Diferencia docentes estimada") ytitle("Densidad") ///
 	graphregion(c(white))
 	
@@ -399,7 +434,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	**# Graficos - Horas totales - BOXPLOT
 	graph box def_total2 def_ido2, ///
 	title("Distribución dif. estimada de docentes Educación Básica",color(black) margin(medium)) ///
-	legend(label(1 "Docentes Totales") label(2 "Docentes Idóneos")) ///
+	legend(label(1 "Docentes Idoneos") label(2 "Docentes Idóneos disciplinar")) ///
 	graphregion(c(white)) ///
 	box(1, color("15 105 180"*0.8)) ///
 	box(2, color("235 60 70"*0.8)) ///
