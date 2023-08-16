@@ -119,7 +119,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	/* Explicacion:
 	Genero una variable ido_bas1 o ido_bas2 según el subsector1 o 2 en que hace clases
 	luego le asigno el 0 a todos aquellos que declaran hacer clases en alguna de las asignaturas de Ens. Basica explicadas arriba
-	Asigno 1 a los IDONEOS, que cumplen la condicion de hacer clases en el nivel & tienen la pedagogia en basica
+	Asigno 1 a los Idóneos, que cumplen la condicion de hacer clases en el nivel & tienen la pedagogia en basica
 	*/
 	
 	global listado1 inlist(subsector1,11001,11004,12001,12002,13001,13002,13003,13004,19001) 
@@ -137,10 +137,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	**# Tasa de Idoneidad
 	** Descrición por sector **
-	 *tab ido_bas // proporción de idoneos es el 64%
-	 tab ido_bas1 // proporción de idoneos es el 69% aumentó a 78,8%
-	 tab ido_bas2 // proporción de idoneos es el 34% aumentó a 80,5% Este aumento es bastante grande
-	 tab tasa_idoneidad // proporción de idoneos es el 63,65% aumentó a 79,8%
+	 *tab ido_bas // proporción de Idóneos es el 64%
+	 tab ido_bas1 // proporción de Idóneos es el 69% aumentó a 78,8%
+	 tab ido_bas2 // proporción de Idóneos es el 34% aumentó a 80,5% Este aumento es bastante grande
+	 tab tasa_idoneidad // proporción de Idóneos es el 63,65% aumentó a 79,8%
 	 tabstat tasa_idoneidad , by(cod_reg_rbd) save f( %9.4f)
 	 
 	 
@@ -152,6 +152,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 
 	 ****** NOTA: Esta seccion solo debe correrse para estadistica descriptiva
 **# Docentes Habilitados
+/*
 	forv i=1/2{
 	if `i'==1 {
 	g doc_habilitado`i'=0 if $listado1 ==1 
@@ -164,10 +165,11 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	}
 
 	egen tasa_habilitado=rowmax(doc_habilitado1 doc_habilitado2)
-
+*/
 	 
 **# Estadística descriptiva Cargo Docente
 { //Esta seccion se traslado a 23081_figuras_hrs_aula
+/*
 	*tasa de idoneidad docente en básica
 	tabstat tasa_idoneidad, by(cod_depe2)
 	
@@ -215,6 +217,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	tab cod_depe2
 	tab sector1
 	tab id_ifs
+	*/
 }
 
 	********************************************************************************
@@ -351,7 +354,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	drop merge_dda
 	
 	*Nos quedamos con 4.820 EE completos
-	** Actualizacion nos quedamos con 4813 debido a la nueva condicion de docentes idoneos
+	** Actualizacion nos quedamos con 4813 debido a la nueva condicion de docentes Idóneos
 
 **# Cálculo del Deficit
 	**# De horas a Docentes
@@ -425,16 +428,17 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	twoway kdensity def_total2  , lp(solid) lcolor("15 105 180"*0.8) lw(medthick)  || ///
 	kdensity def_ido2 , lp(dash) lw(medthick) lcolor("235 60 70"*0.8) ///
 	title("Densidad dif. estimada de docentes en Ens. Básica",color(black) margin(medium) ) ///
-	legend(label(1 "Docentes Idoneos") label(2 "Docentes Idóneos disciplinar") region(fcolor(none) lcolor(none))) ///
+	legend(label(1 "Docentes Idóneos") label(2 "Docentes Idóneos disciplinar") region(fcolor(none) lcolor(none))) ///
 	xtitle("Diferencia docentes estimada") ytitle("Densidad") ///
-	graphregion(c(white))
+	graphregion(c(white)) xlabel(#10) ///
+	xline(0,lcolor("235 60 70"*0.8))  
 	
-	graph export "$output\230811_def_basica_2022_38sem.png",replace
+	*graph export "$output\230811_def_basica_2022_38sem.png",replace
 
 	**# Graficos - Horas totales - BOXPLOT
 	graph box def_total2 def_ido2, ///
 	title("Distribución dif. estimada de docentes Educación Básica",color(black) margin(medium)) ///
-	legend(label(1 "Docentes Idoneos") label(2 "Docentes Idóneos disciplinar")) ///
+	legend(label(1 "Docentes Idóneos") label(2 "Docentes Idóneos disciplinar")) ///
 	graphregion(c(white)) ///
 	box(1, color("15 105 180"*0.8)) ///
 	box(2, color("235 60 70"*0.8)) ///
@@ -443,7 +447,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	note("Nota: Se excluyen los valores externos") ///
 	yline(0, lpattern(solid) lcolor(black*0.6))
 	
-	graph export "$output\230811_boxplot_def_basica_2022_38sem.png",replace
+	*graph export "$output\230811_boxplot_def_basica_2022_38sem.png",replace
 	
 
 	
@@ -465,7 +469,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 
 /* DESCRIPCION TABLAS
 
-sumamos a nivel de comuna la cantidad de docentes faltantes para los casos totales, docentes e idoneos 
+sumamos a nivel de comuna la cantidad de docentes faltantes para los casos totales, docentes e Idóneos 
 
 */
 
