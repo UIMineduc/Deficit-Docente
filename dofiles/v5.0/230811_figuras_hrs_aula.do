@@ -1,5 +1,5 @@
 *Autor: Alonso Arraño
-*Fecha ultima modificacion: 20-07-23
+*Fecha ultima modificacion: 04-09-23
 *Se añaden comentarios a cada seccion para hacer mas facil el traspaso de informacion a Mario o la persona nueva.
 
 *Nota: Este es quizás el proyecto más importante que hice en el CEM, tratenlo con cariño

@@ -144,6 +144,23 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 tabstat tasa_idoneidad , by(cod_reg_rbd) save f( %9.4f)
 	 
 	 
+	 
+	 
+**# Estadistica descriptiva - DOCENTES BASICA 
+
+	*** Cantidad de docentes que ejercen en las asignaturas filtradas
+	codebook mrun if tasa_idoneidad!=.
+
+	*** Distribución de los docentes por dependencia 
+	tab cod_depe2 if tasa_idoneidad!=.
+	tab cod_reg_rbd if tasa_idoneidad!=.
+	 
+	 ** Para capturar la cantidad de establecimientos participantes debemos generar una aux a nivel de rbd
+	 *** que capture si tiene docentes en alguna de estas áreas
+	 
+	 bys rbd: egen aux_contador_rbd=max(tasa_idoneidad)
+	 codebook rbd if aux_contador_rbd!=.
+	 
 	 * Vemos como se comportan los docentes autorizados
 	 capture noisily tab tasa_idoneidad autorizacion_docente
 	 
