@@ -1,6 +1,12 @@
-*** Listado de RBD que no reportan docentes en enseñanza básica
+* Autor: Alonso Arraño
+* Fecha de ultima modificacion: 04-09-23
+* Codigo: Calculo de la dotacion y deficit docente en las asignaturas de lenguaje
+* Matematicas, ciencias e historia en enseñanza media 
 
 clear all
+
+*Añadimos fecha para guardar los archivos
+global suffix: display %tdCCYY-NN-DD =daily("`c(current_date)'", "DMY")
 **#Directorio AAP
 
 cd "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\Data"
@@ -8,7 +14,7 @@ cd "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\Data"
 global docentes "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Docentes\Cargos Docentes"
 global matricula22 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2022"
 global directorio "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Directorios"
-global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output\v4"
+global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\output\v5"
 
 
 
@@ -76,7 +82,10 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	}
 	
 	** Tasa de idoneidad en lenguaje
-	egen tasa_leng=rowmax(ido_leng1 ido_leng2)	
+	egen tasa_leng=rowmax(ido_leng1 ido_leng2)
+	
+	tab cod_depe2 if tasa_leng!=.
+	tab cod_reg_rbd if tasa_leng!=.
 	 
 	**# Ed Media Matematica
 
@@ -87,7 +96,8 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	egen tasa_mat=rowmax(ido_mat1 ido_mat2)	
 
-	 
+	 tab cod_depe2 if tasa_mat!=.
+	 tab cod_reg_rbd if tasa_mat!=.
 **# Ed Media Ciencias
 		
 	**#Fisica
@@ -120,7 +130,8 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		}
 
 	egen tasa_cs=rowmax(ido_cs1 ido_cs2)
-
+	tab cod_depe2 if tasa_cs!=.
+	tab cod_reg_rbd if tasa_cs!=.
 	
 	**# Ed Media Historia
 		forv i=1/2{
@@ -129,11 +140,14 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 		}
 		
 	egen tasa_hist=rowmax(ido_hist1 ido_hist2)
-	
+		tab cod_depe2 if tasa_hist!=.
+			tab cod_reg_rbd if tasa_hist!=.
 	*Dummy si el docente es idoneo para su asignatura o no, lo usaremos para sumar las horas idoneos por asignatura más adelante
 			forv i=1/2{
 	gen doc_ido`i'=1 if inlist(1,ido_leng`i',ido_mat`i',ido_cs`i',ido_hist`i')
 			}
+			
+	egen max_ido=rowmax(doc_ido1 doc_ido2)
 
 	 foreach var of varlist  tasa_* {
 	 	tab `var'
@@ -376,33 +390,76 @@ foreach var in leng mat cs hist{
 	*listado de variables de interés 
 	global listado "def_leng2 def_ido_leng2 def_mat2 def_ido_mat2 def_cs2 def_ido_cs2 def_hist2  def_ido_hist2"
 	
-	graph box def_leng2 def_ido_leng2 def_mat2 def_ido_mat2 def_cs2 def_ido_cs2 def_hist2  def_ido_hist2 , ///
-	title("Distribución dif. estimada de docentes en enseñanza media", color(black) margin(l-7)) ///
-	subtitle("por asignatura") ///
-	legend(label(1 "Dif. Lenguaje Total") ///
-	label(2 "Dif. Lenguaje Idoneo") ///
-	label(3 "Dif. Matemáticas Total") ///
-	label(4 "Dif. Matemáticas Idoneo") ///
-	label(5 "Dif. Ciencias Total") ///
-	label(6 "Dif. Ciencias Idoneo") ///
-	label(7 "Dif. Historia Total") ///
-	label(8 "Dif. Historia Idoneo") ///
+	**# Figuras finales box plot media
+		
+		*Figura Final
+		graph box def_leng2 def_ido_leng2 def_mat2 def_ido_mat2 def_cs2 def_ido_cs2 def_hist2  def_ido_hist2 , ///
+	legend(label(1 "Lenguaje idóneos") ///
+	label(2 "Lenguaje especialistas") ///
+	label(3 "Matemáticas idóneos") ///
+	label(4 "Matemáticas especialistas") ///
+	label(5 "Ciencias idóneos") ///
+	label(6 "Ciencias especialistas") ///
+	label(7 "Historia idóneos") ///
+	label(8 "Historia especialistas") ///
 	region(fcolor(none) lcolor(none))) ///
 	graphregion(c(white)) nooutsides ///
 	ytitle("Diferencia") ///
 	yline(0, lpattern(solid) lcolor(black*0.6)) ///
-	note("Se excluyen los valores externos")
+	note("Nota: Se excluyen los valores externos") ///
+	box(1, color("247 87 100"*0.9)) ///
+	box(2, color("247 87 100"*0.7) lp(dash)) ///
+	box(3, color("15 105 180"*0.9)) ///
+	box(4, color("15 105 180"*0.7) lp(dash)) ///
+	box(5, color("95 187 155"*0.9)) ///
+	box(6, color("95 187 155"*0.7) lp(dash)) ///
+	box(7, color("247 168 21"*0.9)) ///
+	box(8, color("247 168 21"*0.7) lp(dash))
+	graph export "$output\230904_def_doc_media_2022_boxplot.png",replace
+	
+	
+	
+	
+	
+	graph box def_leng2 def_ido_leng2 def_mat2 def_ido_mat2 def_cs2 def_ido_cs2 def_hist2  def_ido_hist2 , ///
+	title("Distribución dif. estimada de docentes en enseñanza media", color(black) margin(l-7)) ///
+	subtitle("por asignatura") ///
+	legend(label(1 "Lenguaje idóneos") ///
+	label(2 "Lenguaje especialistas") ///
+	label(3 "Matemáticas idóneos") ///
+	label(4 "Matemáticas especialistas") ///
+	label(5 "Ciencias idóneos") ///
+	label(6 "Ciencias especialistas") ///
+	label(7 "Historia idóneos") ///
+	label(8 "Historia especialistas") ///
+	region(fcolor(none) lcolor(none))) ///
+	graphregion(c(white)) nooutsides ///
+	ytitle("Diferencia") ///
+	yline(0, lpattern(solid) lcolor(black*0.6)) ///
+	note("Se excluyen los valores externos") ///
+	box(1, color("247 87 100"*0.9)) ///
+	box(2, color("247 87 100"*0.7) lp(dash)) ///
+	box(3, color("15 105 180"*0.9)) ///
+	box(4, color("15 105 180"*0.7) lp(dash)) ///
+	box(5, color("95 187 155"*0.9)) ///
+	box(6, color("95 187 155"*0.7) lp(dash)) ///
+	box(7, color("247 168 21"*0.9)) ///
+	box(8, color("247 168 21"*0.7) lp(dash)) 
 	graph export "$output\230530_def_doc_media_2022_boxplot.png",replace
 	
-	graph box def_ido_leng2 def_ido_mat2 def_ido_cs2 def_ido_hist2, title("Distribución diferencia estimada de docentes en Ens. Media") ///
-	subtitle("por asignatura") ///
+	graph box def_leng2 def_mat2 def_cs2 def_hist2, /// 
 	legend(label(1 "Dif. Lenguaje Idoneo") ///
 	label(2 "Dif. Matemáticas Idoneo") ///
 	label(3 "Dif. Ciencias Idoneo") ///
 	label(4 "Dif. Historia Idoneo")) ///
 	graphregion(c(white)) nooutsides ///
-	ytitle("Diferencia")
+	ytitle("Diferencia") ///
+	yline(0, lpattern(solid) lcolor(black*0.6))
 	*graph export "$output\230505_def_doc_media_2022_boxplot_ido.png",replace
+	
+	*Opciones para gráficos sin formato cem
+	*title("Distribución diferencia estimada de docentes en Ens. Media") ///
+	*subtitle("por asignatura") ///
 
 	*twoway kdensity def_*2 || kdensity def_ido_*2, title("Densidad del superávit/déficit docente en Historia")  xtitle("Diferencia docentes estimada") ytitle("Densidad") graphregion(c(white))
 
