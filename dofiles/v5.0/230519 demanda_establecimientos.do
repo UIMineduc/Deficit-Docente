@@ -4,8 +4,8 @@ cd "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\Data"
 
 global docentes "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Docentes\Cargos Docentes"
 global matricula22 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2022"
-global matricula18 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2018"
-global JEC "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Establecimientos\JEC"
+*global matricula18 "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Matricula\2018"
+*global JEC "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MINEDUC\Establecimientos\JEC"
 
 
 ********************************************************************************
