@@ -426,7 +426,7 @@ foreach var in leng mat cs hist{
 	graphregion(c(white)) nooutsides ///
 	ytitle("Diferencia") ///
 	yline(0, lpattern(solid) lcolor(black*0.6)) ///
-	note("Nota: Se excluyen los valores externos") ///
+	note("Nota: Se excluyen los valores extremos") ///
 	box(1, color("247 87 100"*0.9)) ///
 	box(2, color("247 87 100"*0.7) lp(dash)) ///
 	box(3, color("15 105 180"*0.9)) ///
