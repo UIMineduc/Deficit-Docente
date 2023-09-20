@@ -435,8 +435,8 @@ foreach var in leng mat cs hist{
 	box(6, color("95 187 155"*0.7) lp(dash)) ///
 	box(7, color("247 168 21"*0.9)) ///
 	box(8, color("247 168 21"*0.7) lp(dash))
-	graph export "$output\230904_def_doc_media_2022_boxplot.png",replace
-	
+	graph export "$output\\${suffix}_def_doc_media_2022_boxplot.png",replace
+		graph export "$output\\${suffix}_def_doc_media_2022_boxplot.svg",replace
 	
 	
 	
