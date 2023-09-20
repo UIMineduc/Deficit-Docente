@@ -7,6 +7,7 @@ clear all
 
 *Añadimos fecha para guardar los archivos
 global suffix: display %tdCCYY-NN-DD =daily("`c(current_date)'", "DMY")
+display "$suffix"
 **#Directorio AAP
 
 cd "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\Data"
@@ -144,7 +145,8 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 			tab cod_reg_rbd if tasa_hist!=.
 	*Dummy si el docente es idoneo para su asignatura o no, lo usaremos para sumar las horas idoneos por asignatura más adelante
 			forv i=1/2{
-	gen doc_ido`i'=1 if inlist(1,ido_leng`i',ido_mat`i',ido_cs`i',ido_hist`i')
+	gen doc_ido`i'=0
+		replace doc_ido`i'=1 if inlist(1,ido_leng`i',ido_mat`i',ido_cs`i',ido_hist`i')
 			}
 			
 	egen max_ido=rowmax(doc_ido1 doc_ido2)
@@ -161,6 +163,24 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 *ciencias 71,0
 	 *historia 89,4
 	 tabstat tasa_*
+	 
+**# Estadistica descriptiva para enseñanza media
+
+	** En total hay 
+	tab max_ido // 23207 docentes con especialidad
+	** pero si sumamos las tasa de especialidad por separado, obtenemos 29.483 
+	** Esto debido a que 1 docente puede hacer más de 1 curso en nuestra información
+
+	gen doc_lenguaje=0
+		replace doc_lenguaje=1 if inlist(subsector1,31001,31004) | inlist(subsector2,31001,31004) 
+		
+	gen doc_matem=0
+		replace doc_matem=1 if inlist(subsector1,32001,32002) | inlist(subsector2,32001,32002)
+		
+	
+	 
+	 
+	 
 	 
 	 ********************************************************************************
 	********************************************************************************
@@ -376,7 +396,7 @@ foreach var in leng mat cs hist{
 	xtitle("Diferencia docentes estimada") ///
 	ytitle("Densidad") ///
 	graphregion(c(white))
-	graph export "$output\230530_def_doc_`var'_2022_distr.png", replace
+	graph export "$output\\${suffix}_def_doc_`var'_2022_distr.png", replace
 	local j = `j' +1
 	}
 	
@@ -395,13 +415,13 @@ foreach var in leng mat cs hist{
 		*Figura Final
 		graph box def_leng2 def_ido_leng2 def_mat2 def_ido_mat2 def_cs2 def_ido_cs2 def_hist2  def_ido_hist2 , ///
 	legend(label(1 "Lenguaje idóneos") ///
-	label(2 "Lenguaje especialistas") ///
+	label(2 "Lenguaje con especialidad") ///
 	label(3 "Matemáticas idóneos") ///
-	label(4 "Matemáticas especialistas") ///
+	label(4 "Matemáticas con especialidad") ///
 	label(5 "Ciencias idóneos") ///
-	label(6 "Ciencias especialistas") ///
+	label(6 "Ciencias con especialidad") ///
 	label(7 "Historia idóneos") ///
-	label(8 "Historia especialistas") ///
+	label(8 "Historia con especialidad") ///
 	region(fcolor(none) lcolor(none))) ///
 	graphregion(c(white)) nooutsides ///
 	ytitle("Diferencia") ///
@@ -425,13 +445,13 @@ foreach var in leng mat cs hist{
 	title("Distribución dif. estimada de docentes en enseñanza media", color(black) margin(l-7)) ///
 	subtitle("por asignatura") ///
 	legend(label(1 "Lenguaje idóneos") ///
-	label(2 "Lenguaje especialistas") ///
+	label(2 "Lenguaje con especialidad") ///
 	label(3 "Matemáticas idóneos") ///
-	label(4 "Matemáticas especialistas") ///
+	label(4 "Matemáticas con especialidad") ///
 	label(5 "Ciencias idóneos") ///
-	label(6 "Ciencias especialistas") ///
+	label(6 "Ciencias con especialidad") ///
 	label(7 "Historia idóneos") ///
-	label(8 "Historia especialistas") ///
+	label(8 "Historia con especialidad") ///
 	region(fcolor(none) lcolor(none))) ///
 	graphregion(c(white)) nooutsides ///
 	ytitle("Diferencia") ///

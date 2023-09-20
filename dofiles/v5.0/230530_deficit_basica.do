@@ -9,6 +9,8 @@
 clear all
 graph set window fontface "Calibri light" // Dejamos calibri light como formato predeterminado 
 
+global suffix: display %tdCCYY-NN-DD =daily("`c(current_date)'", "DMY")
+display "$suffix"
 *Directorio AAP
 *Proyecto
 cd "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\Data"
@@ -83,7 +85,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	*Mantenemos a quienes ejercen como docente de aula, de forma primaria y a los que hacen clases en basica
 	*Este se considera el universo de docentes
 		keep if inlist(1,id_ifp,id_ifs)
-		keep if inlist(110,cod_ens_1,cod_ens_2) // | inlist(310,cod_ens_1,cod_ens_2) esta sección la trasladaremos a otro codigo
+		keep if inlist(110,cod_ens_1,cod_ens_2) // Solo ed basica regular
 
 
 	capture noisily codebook   mrun rbd
@@ -144,7 +146,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 tabstat tasa_idoneidad , by(cod_reg_rbd) save f( %9.4f)
 	 
 	 
-	 
+	
 	 
 **# Estadistica descriptiva - DOCENTES BASICA 
 
@@ -163,6 +165,11 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	 
 	 * Vemos como se comportan los docentes autorizados
 	 capture noisily tab tasa_idoneidad autorizacion_docente
+	 
+	 
+	 **# Tasa de docentes generalistas
+	 gen doc_generalista=0 
+		replace doc_generalista=1 if inlist(19001,subsector1,subsector2)
 	 
 	****************************************************************************
 	*************************** Docentes Habilitados ***************************
@@ -454,18 +461,19 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 
 	**# Graficos - Horas totales - BOXPLOT
 	graph box def_total2 def_ido2, ///
-	title("Distribución dif. estimada de docentes Educación Básica",color(black) margin(medium)) ///
-	legend(label(1 "Docentes Idóneos") label(2 "Docentes Idóneos disciplinar")) ///
+	legend(label(1 "Idóneos") label(2 "Idóneos con especialidad")) ///
 	graphregion(c(white)) ///
 	box(1, color("15 105 180"*0.8)) ///
 	box(2, color("235 60 70"*0.8)) ///
 	nooutsides ytitle("Diferencia") ///
 	legend(region(fcolor(none) lcolor(none))) ///
-	note("Nota: Se excluyen los valores externos") ///
+	note("Nota: Se excluyen los valores extremos") ///
 	yline(0, lpattern(solid) lcolor(black*0.6))
+	graph export "$output\\${suffix}_boxplot_def_basica_2022_38sem.png",replace
+	graph export "$output\\${suffix}_boxplot_def_basica_2022_38sem.svg",replace
 	
-	*graph export "$output\230811_boxplot_def_basica_2022_38sem.png",replace
-	
+	*Sacamos esto por politica CEM
+	//	title("Distribución dif. estimada de docentes Educación Básica",color(black) margin(medium)) ///
 
 	
 **# Tablas finales
