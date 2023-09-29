@@ -57,7 +57,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	
 	*Variables de Interés 
 	if base =="publica" {
-		keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 tip_tit_id_2 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1 esp_id_2 id_itc tip_insti_id_1 tip_insti_id_2 grado*_1 grado*_2 autorizacion_docente
+		keep mrun rbd id_ifp id_ifs cod_ens_1 cod_ens_2 sector1 sector2 subsector1 subsector2 horas_aula horas1 horas2 tip_tit_id_1 tip_tit_id_2 nivel1 nivel2 cod_depe2 cod_reg_rbd cod_com_rbd rural_rbd esp_id_1 esp_id_2 id_itc tip_insti_id_1 tip_insti_id_2 grado*_1 grado*_2
 		
 			order cod_reg_rbd cod_com_rbd cod_depe2 rural_rbd rbd mrun
 	}
@@ -452,7 +452,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 	twoway kdensity def_total2  , lp(solid) lcolor("15 105 180"*0.8) lw(medthick)  || ///
 	kdensity def_ido2 , lp(dash) lw(medthick) lcolor("235 60 70"*0.8) ///
 	title("Densidad dif. estimada de docentes en Ens. Básica",color(black) margin(medium) ) ///
-	legend(label(1 "Docentes Idóneos") label(2 "Docentes Idóneos disciplinar") region(fcolor(none) lcolor(none))) ///
+	legend(label(1 "Idóneos") label(2 "Con especialidad") region(fcolor(none) lcolor(none))) ///
 	xtitle("Diferencia docentes estimada") ytitle("Densidad") ///
 	graphregion(c(white)) xlabel(#10) ///
 	xline(0,lcolor("235 60 70"*0.8))  
@@ -461,7 +461,7 @@ global output "D:\OneDrive - Ministerio de Educación\2022\18 Deficit Docente\ou
 
 	**# Graficos - Horas totales - BOXPLOT
 	graph box def_total2 def_ido2, ///
-	legend(label(1 "Idóneos") label(2 "Idóneos con especialidad")) ///
+	legend(label(1 "Idóneos") label(2 "Con especialidad")) ///
 	graphregion(c(white)) ///
 	box(1, color("15 105 180"*0.8)) ///
 	box(2, color("235 60 70"*0.8)) ///
