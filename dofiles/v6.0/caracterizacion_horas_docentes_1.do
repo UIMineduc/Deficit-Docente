@@ -111,7 +111,8 @@ restore
 bys rbd mrun: egen horas_tot=total(horas1)
 gen prop_horas=horas_tot*100/horas_contrato
 
-	
+
+* caso 0 es docentes de aula 
 preserve
 keep if caso1==0
 	
@@ -125,6 +126,7 @@ twoway kdensity prop_horas if cod_depe2==1 & caso1==0, lp(solid) lcolor("15 105 
 	graphregion(c(white))	
 	
 restore
+
 
 preserve
 keep if caso1==0 & asignatura!=.

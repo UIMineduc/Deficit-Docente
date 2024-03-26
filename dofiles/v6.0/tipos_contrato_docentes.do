@@ -40,7 +40,7 @@ global Docentes "D:\OneDrive - Ministerio de Educación\0 0 Bases de datos - MIN
 		tab contrato cod_depe2,col
 	restore
 	
-	hexplot horas_aula i.contrato i.cod_depe2, statistic(mean) values(format(%9.1f)) xlabel(1 2 3 4) ylabel(1(1)4) cuts(@min(0.5)@max) colors(blues) ///
+	heatplot horas_aula i.contrato i.cod_depe2, statistic(mean) values(format(%9.1f))  cuts(@min(0.5)@max) colors(blues) ///
 	title("Promedio horas aula por tipo contrato y dependencia", lalign(center)) ///
 	graphregion(c(white)) keylabels(,format(%9.1f) range(1))
 
@@ -59,6 +59,10 @@ colors(plasma, intensity(.6)) p(lc(black) lalign(center))
 	keep if inlist(sector1,110,115,120,130,140,150,160,170,180,190,310,320,330,340,350,360,370,380,390,395) | inlist(sector2,110,115,120,130,140,150,160,170,180,190,310,320,330,340,350,360,370,380,390,395)
 	
 	tab contrato
+	
+	heatplot horas_aula i.contrato i.cod_depe2, statistic(mean) values(format(%9.1f))  cuts(@min(0.5)@max) colors(blues) ///
+	title("Promedio horas aula por tipo contrato y dependencia (básica)", lalign(center)) ///
+	graphregion(c(white)) keylabels(,format(%9.1f) range(1))
 	restore
 	
 	**# Media
